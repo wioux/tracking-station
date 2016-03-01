@@ -245,7 +245,7 @@ SystemBrowser.prototype.hideBodyTooltip = function() {
 SystemBrowser.prototype.showBodyTooltip = function(body) {
   this.ui.tooltip.textContent = body.name;
 
-  var x, y, pos = body.shell.position.clone().project(ctx.camera);
+  var x, y, pos = body.shell.position.clone().project(this.camera);
   x = window.innerWidth * (1 + pos.x) / 2;
   y = window.innerHeight * (1 - pos.y) / 2;
 
@@ -284,7 +284,7 @@ SystemBrowser.prototype.debugVector = function(pos, v, color) {
     color: color || 0xff0000
   });
   var line = new THREE.Line(geom, mat);
-  ctx.scene.add(line);
+  this.scene.add(line);
 
   this.render();
 };
@@ -302,7 +302,7 @@ SystemBrowser.prototype.debugRayCast = function() {
 };
 
 SystemBrowser.prototype.visualizeRayCast =  function(e) {
-  var camera = ctx.camera;
+  var camera = this.camera;
   var mouse = new THREE.Vector3()
   var raycaster = new THREE.Raycaster();
 
@@ -330,16 +330,16 @@ SystemBrowser.prototype.visualizeRayCast =  function(e) {
 
   // why is camera position initally at Y=-2000?
 
-  var pos = ctx.camera.position.clone();
-  pos.add(raycaster.ray.direction.clone().setLength(ctx.auToPx/10));
+  var pos = this.camera.position.clone();
+  pos.add(raycaster.ray.direction.clone().setLength(this.auToPx/10));
 
-  var intersects = ctx.camera
-      .rayCast(ctx.scene.children, mouse)
+  var intersects = this.camera
+      .rayCast(this.scene.children, mouse)
       .filter(function(t) {
         return t.object.userData.body;
       });
 
-  ctx.debugPosition(pos, intersects.length ? 0x00ff00 : 0xff0000);
+  this.debugPosition(pos, intersects.length ? 0x00ff00 : 0xff0000);
 };
 
 THREE.PerspectiveCamera.prototype.rayCast = function(objects, mouse) {

@@ -17,9 +17,9 @@ SystemPanel = function(system, ui) {
   this.panel = overlay;
   this.info = {
     panel: info,
-    focus: $(info, '[data-info=focus]'),
-    date: $(info, '[data-info=date]'),
-    tooltip: $(ui, '[data-info=body-tooltip]')
+    focus: $(info).find('[data-info=focus]')[0],
+    date: $(info).find('[data-info=date]')[0],
+    tooltip: $(ui).find('[data-info=body-tooltip]')[0]
   };
 
   this.initializeBodyList(system.root);
@@ -46,7 +46,7 @@ SystemPanel.prototype.initializeBodyList = function(root) {
     'children': [_('ul')]
   });
 
-  var bodyList = $(bodyListContainer, 'ul');
+  var bodyList = $(bodyListContainer).find('ul')[0];
   var populate = function(list, root, indent) {
     if (!root)
       return;
@@ -76,14 +76,14 @@ SystemPanel.prototype.bindEvents = function() {
       system = this.system,
       bodyList = $(this.panel, '.body-list');
 
-  bodyList.addEventListener("change", function(e) {
+  $(this.panel).on('change', '.body-list', function(e) {
     var body = system.bodies[e.target.name];
 
     var toggle = function(body, display) {
       display ? body.show() : body.hide();
 
       body.satellites.forEach(function(satellite) {
-        var child = $(bodyList, 'input[type=checkbox][name='+satellite.name+']');
+        var child = $(bodyList).find('input[name='+satellite.name+']')[0];
         toggle(satellite, display && child.checked);
         child.disabled = !display;
       });
@@ -93,7 +93,7 @@ SystemPanel.prototype.bindEvents = function() {
     system.render();
   });
 
-  bodyList.addEventListener("click", function(e) {
+  $(this.panel).on('click', '.body-list', function(e) {
     var li = e.target;
     if (!li.matches('input') && !li.matches('ul')) {
       while (!li.matches('li'))
@@ -105,28 +105,13 @@ SystemPanel.prototype.bindEvents = function() {
     }
   });
 
-/*
-  bodyList.addEventListener('mousemove', function(e) {
-    var li = e.target;
-    while (li && !li.matches('li'))
-      li = li.parentNode;
-
-    if (li) {
-      var id = $(li, 'input[type=checkbox]').name;
-      var body = system.bodies[id];
-      body.highlight();
-      ctx.render();
-    }
-  });
-*/
-
-  this.info.focus.addEventListener('change', function() {
+  $(this.info.focus).on('change', function() {
     var body = system.focus;
-    var bodyList = $(self.panel, '.body-list ul');
-    var focus = $(bodyList, 'li.focused');
+    var bodyList = $(self.panel).find('.body-list ul')[0];
+    var focus = $(bodyList).find('li.focused')[0];
     focus && focus.classList.remove('focused');
 
-    $(bodyList, 'li > input[type=checkbox][name='+body.name+']').
+    $(bodyList).find('li > input[type=checkbox][name='+body.name+']')[0].
       parentNode.classList.add('focused');
   });
 };
