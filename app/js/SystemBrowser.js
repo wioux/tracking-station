@@ -1,3 +1,11 @@
+if (!Float64Array.from)
+  Float64Array.from = function(array) {
+    var result = new Float64Array(array.length);
+    for (var i=0; i < array.length; ++i)
+      result[i] = array[i];
+    return result;
+  };
+
 SystemBrowser = function(ui, body, jd) {
   this.root = body;
 
