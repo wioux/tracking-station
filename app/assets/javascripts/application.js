@@ -13,10 +13,18 @@ $(document).ready(function() {
       bodies[body.id] = object;
       window[body.name] = object;
 
-      object.radiusKm = body.radius_km;
-      object.obliquity = body.obliquity_deg;
       object.spacecraft = (body.classification == 'Spacecraft');
       object.sun = (body.classification == 'Star');
+
+      object.radiusKm = body.radius_km;
+      object.obliquity = body.obliquity_deg;
+
+      if (body.inner_ring_radius_km)
+        object.ring = {
+          innerRadiusKm: body.inner_ring_radius_km,
+          outerRadiusKm: body.outer_ring_radius_km,
+          texture: "textures/"+body.ring_texture
+        }
 
       object.color = body.color ? parseInt(body.color) : 0x808080;
       if (body.texture)

@@ -111,7 +111,12 @@ bodies['Ceres'].update_column(:radius_km, 490)
 bodies['Eris'].update_column(:radius_km, 0.001)
 bodies['Juno'].update_column(:radius_km, 0.001)
 
-bodies['Mercury'].update_column(:color,  '0x00ff00')
+bodies['Saturn'].tap do |saturn|
+  saturn.update_column(:inner_ring_radius_km, saturn.radius_km + 7000);
+  saturn.update_column(:outer_ring_radius_km, saturn.radius_km + 80000);
+end
+
+bodies['Mercury'].update_column(:color, '0x00ff00')
 bodies['Venus'].update_column(:color, '0xffff00')
 bodies['Earth'].update_column(:color, '0x0000ff')
 bodies['Mars'].update_column(:color, '0xff0000')
@@ -136,6 +141,8 @@ bodies['Neptune'].update_column(:texture, "neptunemap.jpg")
 bodies['Pluto'].update_column(:texture, "plutomap1k.jpg")
 
 bodies['Luna'].update_column(:texture, "moonmap1k.jpg")
+
+bodies['Saturn'].update_column(:ring_texture, "saturnringcolor.jpg")
 
 
 bodies['Ariel'].ephemerides.create!({

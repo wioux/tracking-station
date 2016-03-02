@@ -179,6 +179,20 @@ Body.prototype.getBodyGeometry = function(ctx) {
     var obliquity = Math.PI * this.obliquity / 180;
     this._body.rotation.set(Math.PI/2 - obliquity, 0, 0);
 
+    if (this.ring) {
+      this._ring = new THREE.Mesh();
+      this._ring.geometry =
+        new THREE.SweptRingGeometry(ctx.auToPx*this.ring.innerRadiusKm/Orbit.KM_PER_AU,
+                                    ctx.auToPx*this.ring.outerRadiusKm/Orbit.KM_PER_AU,
+                                    30, 30);
+      this._ring.material = new THREE.MeshLambertMaterial({
+        map: ctx.loadTexture(this.ring.texture),
+        side: THREE.DoubleSide
+      });
+      this._ring.rotation.set(-Math.PI/2, Math.PI/10, 0);
+      this._body.add(this._ring);  
+    }
+
     ctx.scene.add(this._body);
   }
   return this._body;
