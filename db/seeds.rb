@@ -68,9 +68,6 @@ bodies['Ceres'].update_column(:parent_id, bodies['Sun'].id)
 bodies['Eris'].update_column(:parent_id, bodies['Sun'].id)
 bodies['Juno'].update_column(:parent_id, bodies['Sun'].id)
 
-bodies['Earth'].update_column(:obliquity_deg, 23.44);
-bodies['Saturn'].update_column(:obliquity_deg, 26.73);
-
 bodies['Sun'].update_column(:radius_km, 695500)
 bodies['Mercury'].update_column(:radius_km, 2440)
 bodies['Venus'].update_column(:radius_km, 6051.8)
@@ -115,6 +112,55 @@ bodies['Saturn'].tap do |saturn|
   saturn.update_column(:outer_ring_radius_km, saturn.radius_km + 80000);
 end
 
+bodies['Mercury'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 281.010);
+  saturn.update_column(:north_pole_declination, 61.416);
+end
+
+bodies['Venus'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 272.76);
+  saturn.update_column(:north_pole_declination, 67.16);
+end
+
+bodies['Earth'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 0.0);
+  saturn.update_column(:north_pole_declination, 90.0);
+end
+
+bodies['Luna'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 0.0);
+  saturn.update_column(:north_pole_declination, 90.0);
+end
+
+bodies['Mars'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 317.681);
+  saturn.update_column(:north_pole_declination, 52.887);
+end
+
+bodies['Jupiter'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 268.05);
+  saturn.update_column(:north_pole_declination, 64.49);
+end
+
+bodies['Saturn'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 40.5954);
+  saturn.update_column(:north_pole_declination, 83.5380);
+end
+
+bodies['Uranus'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 257.43);
+  saturn.update_column(:north_pole_declination, -15.10);
+end
+
+bodies['Neptune'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 299.36);
+  saturn.update_column(:north_pole_declination, 43.46);
+end
+
+bodies['Pluto'].tap do |saturn|
+  saturn.update_column(:north_pole_right_ascension, 132.99);
+  saturn.update_column(:north_pole_declination, -6.16);
+end
 
 bodies['Sun'].update_column(:color, '0xffffff')
 bodies['Mercury'].update_column(:color, '0x00ff00')

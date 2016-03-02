@@ -14,18 +14,19 @@
 ActiveRecord::Schema.define(version: 20160301225734) do
 
   create_table "bodies", force: :cascade do |t|
-    t.string   "name",                               null: false
-    t.string   "classification",                     null: false
-    t.float    "obliquity_deg",        default: 0.0
+    t.string   "name",                       null: false
+    t.string   "classification",             null: false
     t.float    "radius_km"
     t.float    "inner_ring_radius_km"
     t.float    "outer_ring_radius_km"
+    t.float    "north_pole_right_ascension"
+    t.float    "north_pole_declination"
     t.string   "color"
     t.string   "texture"
     t.string   "ring_texture"
     t.integer  "parent_id"
-    t.datetime "created_at",                         null: false
-    t.datetime "updated_at",                         null: false
+    t.datetime "created_at",                 null: false
+    t.datetime "updated_at",                 null: false
   end
 
   create_table "ephemerides", force: :cascade do |t|

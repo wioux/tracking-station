@@ -26,6 +26,9 @@ $(document).ready(function() {
           texture: "textures/"+body.ring_texture
         }
 
+      object.npRA = body.north_pole_right_ascension || 0;
+      object.npDEC = body.north_pole_declination || 0;
+
       object.color = body.color ? parseInt(body.color) : 0x808080;
       if (body.texture)
         object.texture = "textures/"+body.texture;

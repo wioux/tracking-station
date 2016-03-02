@@ -168,9 +168,14 @@ Body.prototype.getBodyGeometry = function(ctx) {
 
     this._body.geometry = new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18);
 
-    // Not accurate since obliquity is relative to orbital plane
-    var obliquity = Math.PI * this.obliquity / 180;
-    this._body.rotation.set(Math.PI/2 - obliquity, 0, 0);
+    if (this.npDEC) {
+      this.np = Orbit.equatorial.equinox();
+      this.np.applyAxisAngle(Orbit.equatorial.pole(), Math.PI*this.npRA/180.0)
+      this.np.applyAxisAngle(this.np.clone().cross(Orbit.equatorial.NORTH), Math.PI*this.npDEC/180.0);
+
+      var q = new THREE.Quaternion().setFromUnitVectors(Orbit.ecliptic.SOLSTICE, this.np);
+      this._body.rotation.setFromQuaternion(q);
+    }
 
     if (this.ring) {
       this._ring = new THREE.Mesh();
@@ -182,7 +187,7 @@ Body.prototype.getBodyGeometry = function(ctx) {
         map: ctx.loadTexture(this.ring.texture),
         side: THREE.DoubleSide
       });
-      this._ring.rotation.set(-Math.PI/2, Math.PI/10, 0);
+      this._ring.rotation.set(-Math.PI/2, 0, 0);
       this._body.add(this._ring);  
     }
 

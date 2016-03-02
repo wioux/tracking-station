@@ -68,16 +68,58 @@ Orbit.prototype.update = function(jd) {
 };
 
 // Private
+Orbit.ecliptic = {
+  solstice: function(size) {
+    return new THREE.Vector3(0, 1, 0);
+  },
+
+  equinox: function(size) {
+    return new THREE.Vector3(size || 1, 0, 0);
+  },
+
+  pole: function(size) {
+    return new THREE.Vector3(0, 0, size || 1);
+  },
+
+  obliquity: 23.4
+};
+
+Orbit.equatorial = {
+  equinox: function(size) {
+    var c = Math.cos(-Math.PI * Orbit.ecliptic.obliquity / 180.0),
+        s = Math.sin(-Math.PI * Orbit.ecliptic.obliquity / 180.0);
+    var m = new THREE.Matrix3()
+        .set(1, 0, 0,
+             0, c, -s,
+             0, s, c);
+    return Orbit.ecliptic.equinox(size).applyMatrix3(m);
+  },
+
+  pole: function(size) {
+    // Why did I have to negate the obliquity? ...
+    var c = Math.cos(-Math.PI * Orbit.ecliptic.obliquity / 180.0),
+        s = Math.sin(-Math.PI * Orbit.ecliptic.obliquity / 180.0);
+    var m = new THREE.Matrix3()
+        .set(1, 0, 0,
+             0, c, -s,
+             0, s, c);
+    return Orbit.ecliptic.pole(size).applyMatrix3(m);
+  }
+};
+
+Orbit.ecliptic.NORTH = Orbit.ecliptic.pole(1);
+Orbit.ecliptic.EQUINOX = Orbit.ecliptic.equinox(1);
+Orbit.ecliptic.SOLSTICE = Orbit.ecliptic.solstice(1);
+
+Orbit.equatorial.NORTH = Orbit.equatorial.pole(1);
+Orbit.equatorial.EQUINOX = Orbit.equatorial.equinox(1);
 
 Orbit.prototype.calculateAxisVectors = function() {
   // ascending node. this puts vernal at <1, 0, 0>
-  var an = new THREE.Vector3(Math.cos(Math.PI*this.om/180.0),
-                             Math.sin(Math.PI*this.om/180.0),
-                             0);
+  var an = Orbit.ecliptic.equinox()
+      .applyAxisAngle(Orbit.ecliptic.NORTH, Math.PI*this.om/180.0);
 
-  // orbital axis
-  this.oa =
-      new THREE.Vector3(0, 0, 1).applyAxisAngle(an, Math.PI*this.inc/180.0);
+  this.oa = Orbit.ecliptic.pole().applyAxisAngle(an, Math.PI*this.inc/180.0);
 
   this.mja =
     an.clone().applyAxisAngle(this.oa, Math.PI*this.w/180.0).normalize();
