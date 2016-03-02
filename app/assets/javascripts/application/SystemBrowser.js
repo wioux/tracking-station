@@ -363,7 +363,7 @@ THREE.PerspectiveCamera.prototype.rayCast = function(objects, mouse) {
   var intersects = raycaster
       .intersectObjects(objects, false)
       .filter(function(intersect) {
-        return intersect.object.material.visible;
+        return intersect.object.visible;
       });
 
   return intersects;
