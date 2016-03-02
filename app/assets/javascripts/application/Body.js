@@ -1,5 +1,4 @@
 // lift .selectEphemeris calls
-// lift ctx.bodies[this.id] = this
 // lift scaleShell / rename
 // lose the "draw" terminology
 
@@ -109,11 +108,6 @@ Body.prototype.drawOrbit = function(ctx, focus, newGeometries) {
   var peri = focus.clone().addScaledVector(mja,  ctx.auToPx * orbit.qr);
   var C    = focus.clone().addScaledVector(mja, -ctx.auToPx * (orbit.a - orbit.qr));
 
-  // useful to have these for debug
-  this.orbit.focus = focus;
-  this.orbit.peri = peri;
-  this.orbit.center = C;
-
   var geometry = this.getOrbitGeometry(ctx, newGeometries);
   for (var p, th, i=0; i < geometry.vertices.length; ++i) {
     th = 2 * Math.PI * i / (geometry.vertices.length - 1);
@@ -153,27 +147,26 @@ Body.prototype.draw = function(ctx, pos) {
 
 Body.prototype.getBodyGeometry = function(ctx) {
   if (!this._body) {
-    if (this.texture)
-      this._texture = ctx.loadTexture(this.texture);
+    this._body = new THREE.Mesh();
+    this._body.up.set(0, 0, 1);
 
-    if (this._texture)
-      this._bodyMaterial = new THREE.MeshLambertMaterial({
+    if (this.texture) {
+      this._texture = ctx.loadTexture(this.texture);
+      this._body.material = new THREE.MeshLambertMaterial({
         map: this._texture,
         emissive: 0xffffff,
         emissiveMap: this._texture,
         emissiveIntensity: this.sun ? 1.0 : 0.15
       });
-    else
-      this._bodyMaterial = new THREE.MeshLambertMaterial({
+    } else {
+      this._body.material = new THREE.MeshLambertMaterial({
         color: this.color,
         emissive: this.color,
         emissiveIntensity: 0.2
       });
+    }
 
-    this._bodyGeometry = new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18);
-
-    this._body = new THREE.Mesh(this._bodyGeometry, this._bodyMaterial);
-    this._body.up.set(0, 0, 1);
+    this._body.geometry = new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18);
 
     // Not accurate since obliquity is relative to orbital plane
     var obliquity = Math.PI * this.obliquity / 180;
@@ -200,13 +193,12 @@ Body.prototype.getBodyGeometry = function(ctx) {
 
 Body.prototype.getShellGeometry = function(ctx) {
   if (!this._shell) {
-    this._shellGeometry = new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18);
-    this._shellMaterial = new THREE.MeshBasicMaterial({
+    this._shell = new THREE.Mesh();
+    this._shell.geometry = new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18);
+    this._shell.material = new THREE.MeshBasicMaterial({
       color: this.color,
       transparent: true
     });
-
-    this._shell = new THREE.Mesh(this._shellGeometry, this._shellMaterial);
 
     ctx.scene.add(this._shell);
   }
@@ -214,41 +206,34 @@ Body.prototype.getShellGeometry = function(ctx) {
 };
 
 Body.prototype.getOrbitGeometry = function(ctx, newGeometries) {
-  // Not yet sure why, but when without recreating this._orbit
+  // Not yet sure why, but without recreating this._orbit
   // the orbit wouldn't render after SystemBrowser#centerCoordinates
-  if (this._orbit && newGeometries) {
-//    ctx.scene.remove(this._orbit);
-    this._orbitGeometry.dispose();
-//    this._orbitMaterial.dispose();
-  }
+  if (this._orbit && newGeometries)
+    this._orbit.geometry.dispose();
 
   if (newGeometries || !this._orbit) {
-    this._orbitGeometry = new THREE.Geometry();
-    for (var i=0; i <= 3*250; ++i)
-      this._orbitGeometry.vertices.push(new THREE.Vector3());
-
-    if (!this._orbitMaterial) {
-      this._orbitMaterial = new THREE.LineBasicMaterial({
+    if (!this._orbit) {
+      this._orbit = new THREE.Line();
+      this._orbit.material = new THREE.LineBasicMaterial({
         color: this.color,
         linewidth: 2,
         transparent: true
       });
-    }
 
-    if (!this._orbit) {
-      this._orbit = new THREE.Line(this._orbitGeometry, this._orbitMaterial);
       ctx.scene.add(this._orbit);
     }
 
-    this._orbit.geometry = this._orbitGeometry;
+    this._orbit.geometry = new THREE.Geometry();
+    for (var i=0; i <= 3*250; ++i)
+      this._orbit.geometry.vertices.push(new THREE.Vector3());
   }
 
-  return this._orbitGeometry;
+  return this._orbit.geometry;
 };
 
 Body.prototype.getLightSource = function(ctx) {
   if (!this._light) {
-    this._light= new THREE.PointLight(0xffffff, 1.0, 0, 0);
+    this._light = new THREE.PointLight(0xffffff, 1.0, 0, 0);
     ctx.scene.add(this._light);
   }
   return this._light;
