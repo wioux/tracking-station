@@ -14,12 +14,11 @@ SystemPanel = function(system, ui) {
   });
 
   this.system = system;
-  this.panel = overlay;
+  this.panel = $(overlay);
   this.info = {
-    panel: info,
-    focus: $(info).find('[data-info=focus]')[0],
-    date: $(info).find('[data-info=date]')[0],
-    tooltip: $(ui).find('[data-info=body-tooltip]')[0]
+    panel: $(info),
+    focus: $(info).find('[data-info=focus]'),
+    date: $(info).find('[data-info=date]')
   };
 
   this.initializeBodyList(system.root);
@@ -28,26 +27,25 @@ SystemPanel = function(system, ui) {
 
 SystemPanel.prototype.setJulianDay = function(jd) {
   this.jd = jd;
-  this.info.date.textContent = JulianDay.toString(jd);
+  this.info.date.text(JulianDay.toString(jd));
 };
 
 SystemPanel.prototype.setFocus = function(body) {
-  this.info.focus.textContent = body.name;
-  this.info.focus.dispatchEvent(new Event('change'));
+  this.info.focus.text(body.name);
+  this.info.focus.trigger('change');
 };
 
 
 // Private
 
 SystemPanel.prototype.initializeBodyList = function(root) {
-  var bodyListContainer = _('div', {
+  var list = _('div', {
     'parent': this.panel,
     'class': 'body-list',
     'children': [_('ul')]
-  });
+  }).children[0];
 
-  var bodyList = $(bodyListContainer).find('ul')[0];
-  var populate = function(list, root, indent) {
+  var populate = function(root, indent) {
     if (!root)
       return;
 
@@ -65,27 +63,27 @@ SystemPanel.prototype.initializeBodyList = function(root) {
     list.appendChild(li);
 
     for (var i=0; i < root.satellites.length; ++i)
-      populate(list, root.satellites[i], indent + 1);
+      populate(root.satellites[i], indent + 1);
   };
 
-  populate(bodyList, root, 0);
+  populate(root, 0);
 };
 
 SystemPanel.prototype.bindEvents = function() {
   var self = this,
       system = this.system,
-      bodyList = $(this.panel, '.body-list');
+      list = $(this.panel).find('.body-list');
 
-  $(this.panel).on('change', '.body-list', function(e) {
+  this.panel.on('change', '.body-list', function(e) {
     var body = system.bodies[e.target.name];
 
     var toggle = function(body, display) {
       display ? body.show() : body.hide();
 
       body.satellites.forEach(function(satellite) {
-        var child = $(bodyList).find('input[name='+satellite.name+']')[0];
-        toggle(satellite, display && child.checked);
-        child.disabled = !display;
+        var child = $(list).find('input[name='+satellite.name+']');
+        toggle(satellite, display && child.prop('checked'));
+        child.prop('disabled', !display);
       });
     };
 
@@ -93,25 +91,21 @@ SystemPanel.prototype.bindEvents = function() {
     system.render();
   });
 
-  $(this.panel).on('click', '.body-list', function(e) {
+  this.panel.on('click', '.body-list', function(e) {
     var li = e.target;
     if (!li.matches('input') && !li.matches('ul')) {
       while (!li.matches('li'))
         li = li.parentNode;
 
-      var id = $(li).find('input[type=checkbox]')[0].name;
+      var id = $(li).find('input[type=checkbox]').attr('name');
       var body = system.bodies[id];
       system.setFocus(body);
     }
   });
 
   $(this.info.focus).on('change', function() {
-    var body = system.focus;
-    var bodyList = $(self.panel).find('.body-list ul')[0];
-    var focus = $(bodyList).find('li.focused')[0];
-    focus && focus.classList.remove('focused');
-
-    $(bodyList).find('li > input[type=checkbox][name='+body.name+']')[0].
-      parentNode.classList.add('focused');
+    $(list).find('li.focused').removeClass('focused');
+    $(list).find('li > input[type=checkbox][name='+system.focus.name+']').
+      parent().addClass('focused');
   });
 };

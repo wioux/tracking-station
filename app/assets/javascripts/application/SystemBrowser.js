@@ -78,7 +78,7 @@ SystemBrowser.prototype.createHtmlComponents = function(ui, root) {
     'data-info': 'body-tooltip'
   });
 
-  this.ui = { system: systemPanel, tooltip: tooltip };
+  this.ui = { system: systemPanel, tooltip: $(tooltip) };
   this.canvas = canvas;
 };
 
@@ -238,20 +238,18 @@ SystemBrowser.prototype.hideBodyTooltip = function() {
   for (var id in this.bodies)
     changed = this.bodies[id].unhighlight() || changed;
 
-  this.ui.tooltip.style.display = 'none';
+  this.ui.tooltip.css('display', 'none');
   changed && this.render();
 };
 
 SystemBrowser.prototype.showBodyTooltip = function(body) {
-  this.ui.tooltip.textContent = body.name;
-
-  var x, y, pos = body.shell.position.clone().project(this.camera);
-  x = window.innerWidth * (1 + pos.x) / 2;
-  y = window.innerHeight * (1 - pos.y) / 2;
-
-  this.ui.tooltip.style.left = x;
-  this.ui.tooltip.style.top = y + 20;
-  this.ui.tooltip.style.display = 'block';
+  var pos = body.shell.position.clone().project(this.camera);
+  this.ui.tooltip.text(body.name);
+  this.ui.tooltip.css({
+    left: window.innerWidth * (1 + pos.x) / 2,
+    top: window.innerHeight * (1 - pos.y) / 2 + 20,
+    display: 'block'
+  });
 
   body.highlight();
   this.render();
