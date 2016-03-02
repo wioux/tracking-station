@@ -7,6 +7,7 @@ if (!Float64Array.from)
   };
 
 SystemBrowser = function(ui, body, jd) {
+  window.ctx = this;
   this.root = body;
 
   var loadBodies = function(container, satellites) {
@@ -269,6 +270,7 @@ SystemBrowser.prototype.debugPosition = function(pos, color) {
   this.scene.add(points);
 
   this.render();
+  return points;
 };
 
 SystemBrowser.prototype.debugVector = function(pos, v, color) {
@@ -285,6 +287,55 @@ SystemBrowser.prototype.debugVector = function(pos, v, color) {
   this.scene.add(line);
 
   this.render();
+  return line;
+};
+
+SystemBrowser.prototype.debugPlane = function(position, normal, color) {
+  var planemat = new THREE.MeshBasicMaterial({
+    color: color || 0xff0000,
+    side: THREE.DoubleSide,
+    transparent: true,
+    opacity: 0.2
+  });
+  var wiremat = new THREE.MeshBasicMaterial({
+    color: color || 0xff0000,
+    side: THREE.DoubleSide,
+    wireframe: true,
+    transparent: true,
+    opacity: 0.3
+  })
+
+  var radius = normal.length();
+  var rings = new THREE.Object3D();
+  geo = new THREE.RingGeometry(0.1, radius, 360/5, 1);
+  mesh = new THREE.Mesh(geo, planemat);
+  mesh.add(new THREE.Mesh(geo, wiremat));
+  rings.add(mesh);
+
+  mesh = new THREE.Mesh(geo, planemat);
+  mesh.add(new THREE.Mesh(geo, wiremat));
+  mesh.rotation.x += Math.PI/2;
+  rings.add(mesh);
+
+  rings.position.add(position);
+
+  var q = new THREE.Quaternion();
+  q.setFromUnitVectors(Orbit.ecliptic.pole().normalize(), normal.clone().normalize());
+  rings.rotation.setFromQuaternion(q);
+
+  this.scene.add(rings);
+
+  this.render();
+  return rings;
+};
+
+
+SystemBrowser.prototype.debugEcliptic = function(position, radius) {
+  return this.debugPlane(position, Orbit.ecliptic.pole(ctx.auToPx/1000), 0x0000ff);
+};
+
+SystemBrowser.prototype.debugEquatorial = function(position, radius) {
+  return this.debugPlane(position, Orbit.equatorial.pole(ctx.auToPx/1000), 0xffffff);
 };
 
 SystemBrowser.prototype.debugRayCast = function() {
