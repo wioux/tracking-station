@@ -14,6 +14,7 @@ $(document).ready(function() {
       window[body.name] = object;
 
       object.radiusKm = body.radius_km;
+      object.obliquity = body.obliquity_deg;
       object.spacecraft = (body.classification == 'Spacecraft');
       object.sun = (body.classification == 'Star');
 

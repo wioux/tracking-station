@@ -3,6 +3,7 @@ class CreateBodies < ActiveRecord::Migration
     create_table :bodies do |t|
       t.string :name, null: false
       t.string :classification, null: false
+      t.float :obliquity_deg, default: 0
       t.float :radius_km
 
       t.string :color

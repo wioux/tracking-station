@@ -14,14 +14,15 @@
 ActiveRecord::Schema.define(version: 20160301225734) do
 
   create_table "bodies", force: :cascade do |t|
-    t.string   "name",           null: false
-    t.string   "classification", null: false
+    t.string   "name",                         null: false
+    t.string   "classification",               null: false
+    t.float    "obliquity_deg",  default: 0.0
     t.float    "radius_km"
     t.string   "color"
     t.string   "texture"
     t.integer  "parent_id"
-    t.datetime "created_at",     null: false
-    t.datetime "updated_at",     null: false
+    t.datetime "created_at",                   null: false
+    t.datetime "updated_at",                   null: false
   end
 
   create_table "ephemerides", force: :cascade do |t|

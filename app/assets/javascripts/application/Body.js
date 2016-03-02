@@ -175,8 +175,9 @@ Body.prototype.getBodyGeometry = function(ctx) {
     this._body = new THREE.Mesh(this._bodyGeometry, this._bodyMaterial);
     this._body.up.set(0, 0, 1);
 
-    // TODO use actual planet tilt
-    this._body.rotation.set(Math.PI/2, 0, 0);
+    // Not accurate since obliquity is relative to orbital plane
+    var obliquity = Math.PI * this.obliquity / 180;
+    this._body.rotation.set(Math.PI/2 - obliquity, 0, 0);
 
     ctx.scene.add(this._body);
   }

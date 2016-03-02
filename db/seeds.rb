@@ -69,6 +69,9 @@ bodies['Ceres'].update_column(:parent_id, bodies['Sun'].id)
 bodies['Eris'].update_column(:parent_id, bodies['Sun'].id)
 bodies['Juno'].update_column(:parent_id, bodies['Sun'].id)
 
+bodies['Earth'].update_column(:obliquity_deg, 23.44);
+bodies['Saturn'].update_column(:obliquity_deg, 26.73);
+
 bodies['Sun'].update_column(:radius_km, 695500)
 bodies['Mercury'].update_column(:radius_km, 2440)
 bodies['Venus'].update_column(:radius_km, 6051.8)
