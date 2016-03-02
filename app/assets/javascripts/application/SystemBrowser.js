@@ -59,8 +59,8 @@ SystemBrowser.prototype.render = function() {
 // private methods
 
 SystemBrowser.prototype.initializeUi = function(ui, body) {
-//  this.auToPx = 1e3;
-  this.auToPx = 1e11;
+  this.auToPx = 1e3;
+//  this.auToPx = 1e11;
 
   this.createHtmlComponents(ui, body);
   this.createWebGLComponents(this.canvas, this.auToPx);

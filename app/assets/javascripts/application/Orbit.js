@@ -1,12 +1,19 @@
 Orbit = function(body) {
   this.body = body;
+  this.ephemerides = [];
 };
 
 Orbit.KM_PER_AU = 1.496e8;
 
 Orbit.prototype.load = function(ephemeris) {
+  // Eccentricity
+  this.ec = parseFloat(ephemeris.ec);
+
   // Semi-major axis (au)
   this.a = parseFloat(ephemeris.a);
+
+  // Semi-minor axis (au) (act like orbit is elliptical even if it isn't)
+  this.b = this.a * Math.sqrt(1.0 - Math.max(0, this.ec*this.ec));
 
   // Periapsis distance (au)
   this.qr = parseFloat(ephemeris.qr);
@@ -16,9 +23,6 @@ Orbit.prototype.load = function(ephemeris) {
 
   // True anomaly (DEG) at epoch
   this.ta = parseFloat(ephemeris.ta);
-
-  // Eccentricity
-  this.ec = parseFloat(ephemeris.ec);
 
   // Apoapsis distance (au)
   this.ad = parseFloat(ephemeris.ad);
@@ -66,17 +70,14 @@ Orbit.prototype.update = function(jd) {
 // Private
 
 Orbit.prototype.calculateAxisVectors = function() {
-  // ascending node
+  // ascending node. this puts vernal at <1, 0, 0>
   var an = new THREE.Vector3(Math.cos(Math.PI*this.om/180.0),
                              Math.sin(Math.PI*this.om/180.0),
                              0);
 
-  // normalized rotation axis for finding orbital axis
-  var ra = an.clone().cross(new THREE.Vector3(0, 0, 1)).normalize();
-
-  // orbital axis. is starting with 0, 0, 1 right?
+  // orbital axis
   this.oa =
-      new THREE.Vector3(0, 0, 1).applyAxisAngle(ra, Math.PI*this.inc/180.0);
+      new THREE.Vector3(0, 0, 1).applyAxisAngle(an, Math.PI*this.inc/180.0);
 
   this.mja =
     an.clone().applyAxisAngle(this.oa, Math.PI*this.w/180.0).normalize();

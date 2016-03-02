@@ -17,17 +17,18 @@ $(document).ready(function() {
       object.spacecraft = (body.classification == 'Spacecraft');
       object.sun = (body.classification == 'Star');
 
-      object.color = body.color;
-      object.texture = body.texture;
+      object.color = body.color ? parseInt(body.color) : 0x808080;
+      if (body.texture)
+        object.texture = "textures/"+body.texture;
 
       if (body.parent_id)
         bodies[body.parent_id].addSatellite(object);
 
-      if (body.ephemeris)
-        object.orbit.load(body.ephemeris);
+      if (body.ephemerides)
+        object.addEphemerides(body.ephemerides);
     });
-  });
 
-  var jd = 2455779.5;
-  var ctx = new SystemBrowser(document.getElementById('ui'), Sun, jd);
+    var jd = Earth.ephemerides[0].jd;
+    var ctx = new SystemBrowser(document.getElementById('ui'), Sun, jd);
+  });
 });

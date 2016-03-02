@@ -9,7 +9,7 @@
 bodies = {}
 
 bodies['Sun'] = Body.create!(name: 'Sun', classification: 'Star',
-                             color: '#ffffff', texture: 'sunmap.jpg')
+                             color: '0xffffff', texture: 'sunmap.jpg')
 
 ['Mercury', 'Venus', 'Earth', 'Mars',
  'Jupiter', 'Saturn', 'Uranus', 'Neptune'].each do |name|

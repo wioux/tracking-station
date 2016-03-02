@@ -99,7 +99,7 @@ SystemPanel.prototype.bindEvents = function() {
       while (!li.matches('li'))
         li = li.parentNode;
 
-      var id = $(li, 'input[type=checkbox]').name;
+      var id = $(li).find('input[type=checkbox]')[0].name;
       var body = system.bodies[id];
       system.setFocus(body);
     }

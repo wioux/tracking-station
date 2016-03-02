@@ -25,6 +25,11 @@ Body = function(name, orbitElements) {
 Body.HIDDEN    = 0x01;
 Body.FADED     = 0x02;
 
+Body.prototype.addEphemerides = function(list) {
+  for (var i=0; i < list.length; ++i)
+    this.ephemerides.push(list[i]);
+};
+
 Body.prototype.selectEphemeris = function(jd) {
   var eph = null;
   for (var i=0; i < this.ephemerides.length; ++i) {
@@ -36,9 +41,7 @@ Body.prototype.selectEphemeris = function(jd) {
   if (!eph)
     throw "No ephemeris for "+this.name+" on jd " + jd;
 
-  for (var key in eph)
-    this.orbit[key] = eph[key];
-
+  this.orbit.load(eph);
   this.orbit.update(jd);
 };
 

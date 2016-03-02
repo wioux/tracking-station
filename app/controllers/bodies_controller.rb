@@ -1,6 +1,6 @@
 class BodiesController < ApplicationController
   def index
-    render json: Body.all, include: :ephemeris
+    render json: Body.preload(:ephemerides), include: :ephemerides
   end
 
   def browser
