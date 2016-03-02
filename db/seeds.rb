@@ -8,8 +8,7 @@
 
 bodies = {}
 
-bodies['Sun'] = Body.create!(name: 'Sun', classification: 'Star',
-                             color: '0xffffff', texture: 'sunmap.jpg')
+bodies['Sun'] = Body.create!(name: 'Sun', classification: 'Star')
 
 ['Mercury', 'Venus', 'Earth', 'Mars',
  'Jupiter', 'Saturn', 'Uranus', 'Neptune'].each do |name|
@@ -116,6 +115,8 @@ bodies['Saturn'].tap do |saturn|
   saturn.update_column(:outer_ring_radius_km, saturn.radius_km + 80000);
 end
 
+
+bodies['Sun'].update_column(:color, '0xffffff')
 bodies['Mercury'].update_column(:color, '0x00ff00')
 bodies['Venus'].update_column(:color, '0xffff00')
 bodies['Earth'].update_column(:color, '0x0000ff')
