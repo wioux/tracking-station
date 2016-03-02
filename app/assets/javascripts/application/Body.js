@@ -169,11 +169,12 @@ Body.prototype.getBodyGeometry = function(ctx) {
     this._body.geometry = new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18);
 
     if (this.npDEC) {
-      this.np = Orbit.equatorial.equinox();
-      this.np.applyAxisAngle(Orbit.equatorial.pole(), Math.PI*this.npRA/180.0)
-      this.np.applyAxisAngle(this.np.clone().cross(Orbit.equatorial.NORTH), Math.PI*this.npDEC/180.0);
+      this.np = Equatorial.equinox();
+      this.np.applyAxisAngle(Equatorial.pole(), Math.PI*this.npRA/180.0)
+      this.np.applyAxisAngle(this.np.clone().cross(Equatorial.NORTH), Math.PI*this.npDEC/180.0);
 
-      var q = new THREE.Quaternion().setFromUnitVectors(Orbit.ecliptic.SOLSTICE, this.np);
+      // Default rotation leaves body pointing to <0, 1, 0>
+      var q = new THREE.Quaternion().setFromUnitVectors(Ecliptic.SOLSTICE, this.np);
       this._body.rotation.setFromQuaternion(q);
     }
 

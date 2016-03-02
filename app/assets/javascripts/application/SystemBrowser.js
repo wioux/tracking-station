@@ -320,7 +320,7 @@ SystemBrowser.prototype.debugPlane = function(position, normal, color) {
   rings.position.add(position);
 
   var q = new THREE.Quaternion();
-  q.setFromUnitVectors(Orbit.ecliptic.pole().normalize(), normal.clone().normalize());
+  q.setFromUnitVectors(Ecliptic.pole().normalize(), normal.clone().normalize());
   rings.rotation.setFromQuaternion(q);
 
   this.scene.add(rings);
@@ -331,11 +331,11 @@ SystemBrowser.prototype.debugPlane = function(position, normal, color) {
 
 
 SystemBrowser.prototype.debugEcliptic = function(position, radius) {
-  return this.debugPlane(position, Orbit.ecliptic.pole(ctx.auToPx/1000), 0x0000ff);
+  return this.debugPlane(position, Ecliptic.pole(ctx.auToPx/1000), 0x0000ff);
 };
 
 SystemBrowser.prototype.debugEquatorial = function(position, radius) {
-  return this.debugPlane(position, Orbit.equatorial.pole(ctx.auToPx/1000), 0xffffff);
+  return this.debugPlane(position, Equatorial.pole(ctx.auToPx/1000), 0xffffff);
 };
 
 SystemBrowser.prototype.debugRayCast = function() {
