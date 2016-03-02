@@ -5,6 +5,7 @@
 ### Limitations (TODO)
   * Planets don't have correct tilt
   * Planets don't rotate
+  * Planets don't have rings
   * Pluto/Neptune/Uranus positions are detached from their orbits a little
 
 ### Credits
