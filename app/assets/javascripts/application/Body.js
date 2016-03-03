@@ -99,6 +99,18 @@ Body.prototype.drawSystem = function(ctx, focus, jd, newGeometries) {
   }
 };
 
+Body.prototype.applyAxialTilt = function(ra, dec) {
+  this.np = Equatorial.equinox();
+  this.np.applyAxisAngle(Equatorial.pole(), Math.PI*ra/180.0)
+  this.np.applyAxisAngle(this.np.clone().cross(Equatorial.NORTH), Math.PI*dec/180.0);
+
+  // Default rotation leaves body pointing to <0, 1, 0>
+  var q = new THREE.Quaternion().setFromUnitVectors(Ecliptic.SOLSTICE, this.np);
+  this._body.rotation.setFromQuaternion(q);
+};
+
+// Private
+
 // Compute geometry for this body's orbit around `focus`, and add it to `ctx.scene`.
 // Return this body's position along its orbit
 Body.prototype.drawOrbit = function(ctx, focus, newGeometries) {
@@ -171,15 +183,8 @@ Body.prototype.getBodyGeometry = function(ctx) {
 
     this._body.geometry = new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18);
 
-    if (this.npDEC) {
-      this.np = Equatorial.equinox();
-      this.np.applyAxisAngle(Equatorial.pole(), Math.PI*this.npRA/180.0)
-      this.np.applyAxisAngle(this.np.clone().cross(Equatorial.NORTH), Math.PI*this.npDEC/180.0);
-
-      // Default rotation leaves body pointing to <0, 1, 0>
-      var q = new THREE.Quaternion().setFromUnitVectors(Ecliptic.SOLSTICE, this.np);
-      this._body.rotation.setFromQuaternion(q);
-    }
+    if (this.npDEC)
+      this.applyAxialTilt(this.npRA, this.npDEC);
 
     if (this.rings) {
       this._body.castShadow = true;
