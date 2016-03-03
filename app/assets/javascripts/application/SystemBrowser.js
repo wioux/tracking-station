@@ -7,7 +7,6 @@ if (!Float64Array.from)
   };
 
 SystemBrowser = function(ui, body, jd) {
-  window.ctx = this;
   this.root = body;
 
   var loadBodies = function(container, satellites) {
@@ -336,11 +335,11 @@ SystemBrowser.prototype.debugPlane = function(position, normal, color) {
 
 
 SystemBrowser.prototype.debugEcliptic = function(position, radius) {
-  return this.debugPlane(position, Ecliptic.pole(ctx.auToPx/1000), 0x0000ff);
+  return this.debugPlane(position, Ecliptic.pole(this.auToPx/1000), 0x0000ff);
 };
 
 SystemBrowser.prototype.debugEquatorial = function(position, radius) {
-  return this.debugPlane(position, Equatorial.pole(ctx.auToPx/1000), 0xffffff);
+  return this.debugPlane(position, Equatorial.pole(this.auToPx/1000), 0xffffff);
 };
 
 SystemBrowser.prototype.debugRayCast = function() {
