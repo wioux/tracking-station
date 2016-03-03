@@ -34,6 +34,11 @@ body {
     display: 0 1 auto;
 }
 
+#ui .overlay .info > div label {
+    display: inline-block;
+    width: 75px;
+}
+
 #ui .overlay .body-list {
     display: 1 1 auto;
     overflow-y: auto;
