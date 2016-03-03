@@ -1,5 +1,5 @@
 ### Example
-    http://wioux.github.io/tracking-station/
+http://wioux.github.io/tracking-station/
 
 ### Limitations (TODO)
   * Planets don't rotate
