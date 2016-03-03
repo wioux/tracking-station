@@ -37,7 +37,7 @@ SystemBrowser = function(ui, body, jd) {
 
 SystemBrowser.prototype.update = function(jd) {
   var oldCenter = this.camera.controls.target.clone();
-  this.root.drawSystem(this, new THREE.Vector3(0, 0, 0), jd, true);
+  this.root.updateObject3d(this, jd, new THREE.Vector3(0, 0, 0));
 
   this.pan(this.camera.controls.target, true);
   this.render();
@@ -47,10 +47,9 @@ SystemBrowser.prototype.update = function(jd) {
 
 SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
-  this.camera.controls.target = body.shell.position;
+  this.camera.controls.target = body.object3d.position;
   this.camera.controls.minDistance = 2*body.bodyRadius(this);
-  this.pan(body.shell.position, function() {
-    this.centerCoordinates();
+  this.pan(body.object3d.position, function() {
     this.camera.controls.update();
   });
 
@@ -66,7 +65,6 @@ SystemBrowser.prototype.render = function() {
 
 SystemBrowser.prototype.initializeUi = function(ui, body) {
   this.auToPx = 1e3;
-//  this.auToPx = 1e11;
 
   this.createHtmlComponents(ui, body);
   this.createWebGLComponents(this.canvas, this.auToPx);
@@ -169,6 +167,10 @@ SystemBrowser.prototype.bindEvents = function() {
     }
   });
 
+  this.canvas.addEventListener('mousemove', function(e) {
+    self.visualizeRayCastEnabled && self.visualizeRayCast(e);
+  });
+
   window.addEventListener('resize', function() {
     self.camera.aspect = window.innerWidth / window.innerHeight;
     self.camera.updateProjectionMatrix();
@@ -210,17 +212,6 @@ SystemBrowser.prototype.pan = function(position, immediate, callback) {
 
   animate();
 };
-
-SystemBrowser.prototype.centerCoordinates = function() {
-  var translation = this.root.shell.position.clone().sub(this.focusPosition);
-  this.root.drawSystem(this, translation, this.ui.system.jd, true);
-
-  this.camera.position.sub(this.focusPosition);
-  this.focusPosition.set(0, 0, 0);
-
-  this.render();
-};
-
 
 SystemBrowser.prototype.applyVisibilityFlags = function() {
   var body, localSystem = this.focus.family();
@@ -264,7 +255,7 @@ SystemBrowser.prototype.hideBodyTooltip = function() {
 };
 
 SystemBrowser.prototype.showBodyTooltip = function(body) {
-  var pos = body.shell.position.clone().project(this.camera);
+  var pos = body.object3d.position.clone().project(this.camera);
   this.ui.tooltip.text(body.name);
   this.ui.tooltip.css({
     left: window.innerWidth * (1 + pos.x) / 2,
@@ -384,13 +375,11 @@ SystemBrowser.prototype.debugEquatorial = function(position, radius) {
 SystemBrowser.prototype.debugRayCast = function() {
   if (this.visualizeRayCastEnabled) {
     console.log('stopping ray cast visualization');
-    this.canvas.removeEventListener('mousemove', this.visualizeRayCast);
-    return this.visualizeRayCastEnabled = false;
+    this.visualizeRayCastEnabled = false;
+  } else {
+    console.log('visualizing ray casts');
+    this.visualizeRayCastEnabled = true;
   }
-
-  console.log('visualizing ray casts');
-  this.visualizeRayCastEnabled = true;
-  this.canvas.addEventListener('mousemove', this.visualizeRayCast);
 };
 
 SystemBrowser.prototype.visualizeRayCast =  function(e) {
@@ -455,7 +444,7 @@ THREE.PerspectiveCamera.prototype.rayCast = function(objects, mouse) {
     .sub(raycaster.ray.origin).normalize();
 
   var intersects = raycaster
-      .intersectObjects(objects, false)
+      .intersectObjects(objects, true)
       .filter(function(intersect) {
         return intersect.object.visible;
       });

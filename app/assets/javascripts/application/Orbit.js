@@ -6,6 +6,8 @@ Orbit = function(body) {
 Orbit.KM_PER_AU = 1.496e8;
 
 Orbit.prototype.load = function(ephemeris) {
+  this.ephemeris = ephemeris;
+
   // Eccentricity
   this.ec = parseFloat(ephemeris.ec);
 
@@ -67,6 +69,35 @@ Orbit.prototype.update = function(jd) {
   this.jd = jd;
 };
 
+Orbit.prototype.updateObject3d = function(ctx, color) {
+  if (!this.object3d)
+    this.createOrbitObject(ctx, color);
+
+  var mja = this.mja, mna = this.mna, geometry = this.object3d.geometry;
+  var C   = mja.clone().multiplyScalar(-ctx.auToPx * (this.a - this.qr));
+
+  if (this.lastPositionedEphemeris != this.ephemeris) {
+    this.lastPositionedEphemeris = this.ephemeris;
+    for (var p, th, i=0; i < geometry.vertices.length; ++i) {
+      th = 2 * Math.PI * i / (geometry.vertices.length - 1);
+
+      p = C.clone()
+        .addScaledVector(mja, ctx.auToPx * this.a * Math.cos(th))
+        .addScaledVector(mna, ctx.auToPx * this.b * Math.sin(th));
+
+      this.object3d.geometry.vertices[i].copy(p);
+    }
+
+    this.object3d.geometry.verticesNeedUpdate = true;
+  }
+
+  var pos = this.body.object3d.position.clone().add(C)
+      .addScaledVector(mja, ctx.auToPx * this.a * Math.cos(Math.PI*this.ta/180.0))
+      .addScaledVector(mna, ctx.auToPx * this.b * Math.sin(Math.PI*this.ta/180.0));
+
+  return pos;
+};
+
 // Private
 
 Orbit.prototype.calculateAxisVectors = function() {
@@ -77,6 +108,23 @@ Orbit.prototype.calculateAxisVectors = function() {
 
   this.mna = this.mja.clone().applyAxisAngle(this.oa, Math.PI/2).normalize();
 };
+
+Orbit.prototype.createOrbitObject = function(ctx, color) {
+  if (!this.object3d) {
+    this.object3d = new THREE.Line();
+    this.object3d.material = new THREE.LineBasicMaterial({
+      color: color,
+      linewidth: 2,
+      transparent: true
+    });
+
+    this.object3d.geometry = new THREE.Geometry();
+    for (var i=0; i <= 360; ++i)
+      this.object3d.geometry.vertices.push(new THREE.Vector3());
+
+    this.body.object3d.add(this.object3d);
+  }
+}
 
 // Approximate eccentric anomaly from mean anomaly
 // Using Newton's method on Kepler's equation
