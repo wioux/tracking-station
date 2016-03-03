@@ -157,7 +157,9 @@ Body.prototype.createBodyObject = function(ctx) {
     }
 
     this.object3d.body.geometry =
-      new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18);
+      new THREE.BufferGeometry().fromGeometry(
+        new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18)
+      );
 
     this.object3d.add(this.object3d.body);
   }
@@ -168,7 +170,9 @@ Body.prototype.createIndicatorObject = function(ctx) {
     this.object3d.indicator = new THREE.Mesh();
     this.object3d.indicator.userData.body = this;
     this.object3d.indicator.geometry =
-      new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18);
+      new THREE.BufferGeometry().fromGeometry(
+        new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18)
+      );
 
     this.object3d.indicator.material = new THREE.MeshBasicMaterial({
       color: this.color,
