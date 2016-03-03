@@ -7,7 +7,7 @@
 $(document).ready(function() {
   var bodies = {};
 
-  $.get('/bodies.json', function(resp) {
+  $.get('bodies.json', function(resp) {
     resp.forEach(function(body) {
       var object = new Body(body.name);
       bodies[body.id] = object;
