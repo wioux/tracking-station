@@ -108,6 +108,7 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   var self = this;
   camera.controls = new THREE.OrbitControls(camera, renderer.domElement);
   camera.controls.enablePan = false;
+  camera.controls.zoomSpeed = 2.0;
   camera.controls.addEventListener('change', function() {
     self.render();
   });
