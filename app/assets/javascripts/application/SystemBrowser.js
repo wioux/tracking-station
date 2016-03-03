@@ -24,11 +24,15 @@ SystemBrowser = function(ui, body, jd) {
   this.focus = body;
 
   this.initializeUi(ui, body);
-
-  this.update(jd);
-
   this.ui.system.setJulianDay(jd);
+
+  this.jd = jd;
+  this.update(jd);
   this.setFocus(body);
+
+  this.setWarp(17);
+  this.clock();
+  this.animate();
 };
 
 SystemBrowser.prototype.update = function(jd) {
@@ -153,6 +157,18 @@ SystemBrowser.prototype.bindEvents = function() {
       self.showBodyTooltip(intersects[0].object.userData.body);
   });
 
+  document.addEventListener('keydown', function(e) {
+    switch(e.which) {
+    case 188:
+      self.setWarp(self.warp - 1);
+      break;
+
+    case 190:
+      self.setWarp(self.warp + 1);
+      break;
+    }
+  });
+
   window.addEventListener('resize', function() {
     self.camera.aspect = window.innerWidth / window.innerHeight;
     self.camera.updateProjectionMatrix();
@@ -258,6 +274,29 @@ SystemBrowser.prototype.showBodyTooltip = function(body) {
 
   body.highlight();
   this.render();
+};
+
+SystemBrowser.prototype.animate = function() {
+  var sys = this;
+  this.animationFrameRequest = requestAnimationFrame(function() { sys.animate() });
+
+  this.update(this.jd);
+};
+
+SystemBrowser.prototype.stopAnimation = function() {
+  cancelAnimationFrame(this.animationFrameRequest);
+};
+
+SystemBrowser.prototype.clock = function() {
+  var self = this, interval = 16;
+  setInterval(function() {
+    self.jd += Math.pow(2, self.warp) / (24*60*60*1000 / interval);
+  }, interval);
+};
+
+SystemBrowser.prototype.setWarp = function(n) {
+  this.warp = Math.max(0, n);
+  this.ui.system.info.warp.text(n);
 };
 
 SystemBrowser.prototype.debugPosition = function(pos, color) {

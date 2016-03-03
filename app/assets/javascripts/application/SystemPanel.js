@@ -9,6 +9,11 @@ SystemPanel = function(system, ui) {
   });
 
   _('div', { parent: info }, function(container) {
+    _('label', { parent: container }).textContent = 'Time Warp';
+    _('span',  { parent: container, 'data-info': 'warp' });
+  });
+
+  _('div', { parent: info }, function(container) {
     _('label', { parent: container }).textContent = 'Focus';
     _('span',  { parent: container, 'data-info': 'focus' });
   });
@@ -18,7 +23,8 @@ SystemPanel = function(system, ui) {
   this.info = {
     panel: $(info),
     focus: $(info).find('[data-info=focus]'),
-    date: $(info).find('[data-info=date]')
+    date: $(info).find('[data-info=date]'),
+    warp: $(info).find('[data-info=warp]')
   };
 
   this.initializeBodyList(system.root);

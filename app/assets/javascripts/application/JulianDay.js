@@ -37,6 +37,7 @@ JulianDay = {
     ];
 
     // new Date(Date.UTC(year, month, day, hour, minute, second));
+    day = day < 10 ? ' '+day : ''+day;
     return months[month].substr(0, 3) + ' ' + day + ', ' + year;
   }
 };

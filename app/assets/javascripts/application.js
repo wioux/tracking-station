@@ -8,6 +8,7 @@ $(document).ready(function() {
   new Loader({ textures: 'textures/' })
     .loadBodies(function(bodies) {
       var jd = Earth.ephemerides[0].jd;
-      window.sys = new SystemBrowser(document.getElementById('ui'), Sun, jd);
+      var container = document.getElementById('ui');
+      window.sys = new SystemBrowser(container, Sun, parseFloat(jd));
     });
 });
