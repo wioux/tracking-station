@@ -98,6 +98,8 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
 
   var renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.shadowMap.enabled = true,
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   canvas.appendChild(renderer.domElement);
 
   // Tuck controls under this.camera
