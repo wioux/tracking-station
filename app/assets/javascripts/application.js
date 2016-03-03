@@ -21,7 +21,7 @@ $(document).ready(function() {
       if (body.inner_ring_radius_km) {
         object.rings = new PlanetaryRing(body.inner_ring_radius_km,
                                          body.outer_ring_radius_km);
-        object.rings.texture = "textures/"+body.ring_texture
+        object.rings.texture = "public/textures/"+body.ring_texture
       }
 
       object.npRA = body.north_pole_right_ascension || 0;
@@ -29,7 +29,7 @@ $(document).ready(function() {
 
       object.color = body.color ? parseInt(body.color) : 0x808080;
       if (body.texture)
-        object.texture = "textures/"+body.texture;
+        object.texture = "public/textures/"+body.texture;
 
       if (body.parent_id)
         bodies[body.parent_id].addSatellite(object);
