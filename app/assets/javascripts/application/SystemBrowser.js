@@ -45,8 +45,10 @@ SystemBrowser.prototype.update = function(jd) {
 SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
   this.camera.controls.target = body.shell.position;
+  this.camera.controls.minDistance = 2*body.bodyRadius(this);
   this.pan(body.shell.position, function() {
     this.centerCoordinates();
+    this.camera.controls.update();
   });
 
   this.ui.system.setFocus(body);
