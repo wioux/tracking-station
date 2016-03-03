@@ -1,6 +1,5 @@
 ### Example
-    cd public
-    bundle exec serve
+    http://wioux.github.io/tracking-station/
 
 ### Limitations (TODO)
   * Planets don't rotate
