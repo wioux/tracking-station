@@ -139,11 +139,8 @@ Body.prototype.draw = function(ctx, pos) {
   body.position.set(pos.x, pos.y, pos.z);
   body.userData.body = this;
 
-  if (this._ring) {
-    // this assumes Sun is root and has already been positioned
-    var sunline = ctx.root.shell.position.clone().sub(pos).normalize();
-    this._ring.spotlight.position.copy(pos.clone().add(sunline.setLength(25*this.bodyRadius(ctx))));
-  }
+  if (this.rings)
+    this.rings.drawShadows(ctx, pos)
 
   if (this.sun)
     this.getLightSource(ctx).position.set(pos.x, pos.y, pos.z);
@@ -184,36 +181,9 @@ Body.prototype.getBodyGeometry = function(ctx) {
       this._body.rotation.setFromQuaternion(q);
     }
 
-    if (this.ring) {
-      this._ring = new THREE.Mesh();
-      this._ring.geometry =
-        new THREE.SweptRingGeometry(ctx.auToPx*this.ring.innerRadiusKm/Orbit.KM_PER_AU,
-                                    ctx.auToPx*this.ring.outerRadiusKm/Orbit.KM_PER_AU,
-                                    30, 30);
-      this._ring.material = new THREE.MeshPhongMaterial({
-        map: ctx.loadTexture(this.ring.texture),
-        side: THREE.DoubleSide
-      });
-      this._ring.rotation.set(-Math.PI/2, 0, 0);
-
-      // Shadows cast from the Sun don't look good (it is too far away).
-      // So we invent a spotlight pointing at the rings, which should be positioned
-      // the line connecting this body and the Sun and pointed at the body. Place
-      // the spotlight about 25 body radii away before rendering.
-      // Still need to work on this problem...
-      this._ring.spotlight = new THREE.SpotLight(0xffffff);
-      this._ring.spotlight.castShadow = true;
-      this._ring.spotlight.angle = Math.PI / 30;
-      this._ring.spotlight.shadow.camera.near = this.bodyRadius(ctx);
-      this._ring.spotlight.shadow.camera.far = 30 * this.bodyRadius(ctx);
-      this._ring.spotlight.target = this._body;
-      this._ring.spotlight.intensity = 0.25;
-
+    if (this.rings) {
       this._body.castShadow = true;
-      this._ring.receiveShadow = true;
-
-      this._body.add(this._ring);  
-      ctx.scene.add(this._ring.spotlight);
+      this._body.add(this.rings.getRing(ctx, this));
     }
 
     ctx.scene.add(this._body);

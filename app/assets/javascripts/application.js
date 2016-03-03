@@ -18,12 +18,11 @@ $(document).ready(function() {
 
       object.radiusKm = body.radius_km;
 
-      if (body.inner_ring_radius_km)
-        object.ring = {
-          innerRadiusKm: body.inner_ring_radius_km,
-          outerRadiusKm: body.outer_ring_radius_km,
-          texture: "textures/"+body.ring_texture
-        }
+      if (body.inner_ring_radius_km) {
+        object.rings = new PlanetaryRing(body.inner_ring_radius_km,
+                                         body.outer_ring_radius_km);
+        object.rings.texture = "textures/"+body.ring_texture
+      }
 
       object.npRA = body.north_pole_right_ascension || 0;
       object.npDEC = body.north_pole_declination || 0;
