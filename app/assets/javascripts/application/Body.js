@@ -286,13 +286,13 @@ Body.prototype.setOpacity = function(opacity) {
 };
 
 Body.prototype.setOrbitVisibility = function(visibility) {
-  this._orbit && (this._orbit.material.visible = !!visibility);
+  this._orbit && (this._orbit.visible = !!visibility);
 };
 
 Body.prototype.setBodyVisibility = function(visibility) {
-  this._body.material.visible = !!visibility;
+  this._body.visible = !!visibility;
 };
 
 Body.prototype.setShellVisibility = function(visibility) {
-  this._shell.material.visible = !!visibility;
+  this._shell.visible = !!visibility;
 };
