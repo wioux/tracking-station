@@ -136,7 +136,7 @@ Orbit.solveEA = function(ec, ma) {
   var f = ea - ec*Math.sin(ma) - ma;
   for (var i=0; i < 50; ++i) {
     ea = ea - f/(1 - ec*Math.cos(ea));
-    f = ea - ec*Math.sin(ma) - ma;
+    f = ea - ec*Math.sin(ea) - ma;
   }
 
   return 180.0 * ea / Math.PI;
