@@ -5,16 +5,20 @@ PlanetaryRing = function(innerRadiusKm, outerRadiusKm) {
   this.texture = null;
 };
 
-PlanetaryRing.prototype.updateObject3d = function(ctx, body) {
-  if (!this.object3d)
-    this.createRingsObject(ctx, body);
+PlanetaryRing.prototype.updateObject3d = function() {
+  var sunline = new THREE.Vector3();
 
-  // this assumes Sun is root and has already been positioned
-  var sunline = ctx.root.object3d.position.clone()
+  return function(ctx, body) {
+    if (!this.object3d)
+      this.createRingsObject(ctx, body);
+
+    // this assumes Sun is root and has already been positioned
+    sunline.copy(ctx.root.object3d.position)
       .sub(body.object3d.position).normalize();
-  this.spotlight.position
-    .copy(body.object3d.position).addScaledVector(sunline, this.spotlightDistance);
-};
+    this.spotlight.position.copy(body.object3d.position)
+      .addScaledVector(sunline, this.spotlightDistance);
+  };
+}();
 
 PlanetaryRing.prototype.createRingsObject = function(ctx, body) {
   if (!this.object3d) {

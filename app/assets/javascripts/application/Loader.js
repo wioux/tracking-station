@@ -42,8 +42,10 @@ Loader.prototype.createBodyFromJson = function(system, json) {
   if (json.parent_id)
     system[json.parent_id].addSatellite(body);
 
-  if (json.ephemerides)
+  if (json.ephemerides) {
+    json.ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });
     body.addEphemerides(json.ephemerides);
+  }
 
   return body;
 };

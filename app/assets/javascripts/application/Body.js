@@ -52,21 +52,24 @@ Body.prototype.addSatellite = function(satellite) {
 
 // This body, its ancestors, and its descendants (in no particular order)
 Body.prototype.family = function() {
-  var family = [];
+  if (this.cachedFamily)
+    return this.cachedFamily;
+
+  this.cachedFamily = [];
 
   var body = this;
   while (body) {
-    family.push(body);
+    this.cachedFamily.push(body);
     body = body.orbit.body;
   }
 
   var descendants = this.satellites.slice(0);
   for (var i=0; i < descendants.length; ++i) {
     descendants[i].satellites.forEach(function(x) { descendants.push(x) });
-    family.push(descendants[i]);
+    this.cachedFamily.push(descendants[i]);
   }
 
-  return family;
+  return this.cachedFamily;
 };
 
 Body.prototype.show = function() {
@@ -118,19 +121,27 @@ Body.prototype.updateObject3d = function(ctx, jd, position) {
     this.satellites[i].updateObject3d(ctx, jd);
 };
 
-Body.prototype.applyAxialTilt = function(ra, dec) {
-  this.np = Equatorial.equinox();
-  this.np.applyAxisAngle(Equatorial.pole(), Math.PI*ra/180.0)
-  this.np.applyAxisAngle(this.np.clone().cross(Equatorial.NORTH), Math.PI*dec/180.0);
+Body.prototype.applyAxialTilt = function() {
+  var raP = new THREE.Vector3();
+  var np = new THREE.Vector3();
+  var q = new THREE.Quaternion();
 
-  // Default sphere rotation leaves body pointing to <0, 1, 0>
-  var q = new THREE.Quaternion().setFromUnitVectors(Ecliptic.SOLSTICE, this.np);
-  this.object3d.body.rotation.setFromQuaternion(q);
+  return function(ra, dec) {
+    raP.copy(Equatorial.EQUINOX);
+    raP.applyAxisAngle(Equatorial.NORTH, Math.PI*ra/180.0)
+    np.copy(raP).applyAxisAngle(raP.cross(Equatorial.NORTH), Math.PI*dec/180.0);
 
-  // Default ring rotation leaves them pointing to <0, 0, 1>
-  q = new THREE.Quaternion().setFromUnitVectors(Ecliptic.NORTH, this.np);
-  this.rings && this.rings.object3d.rotation.setFromQuaternion(q);
-};
+    // Default sphere rotation leaves body pointing to <0, 1, 0>
+    q.setFromUnitVectors(Ecliptic.SOLSTICE, np);
+    this.object3d.body.rotation.setFromQuaternion(q);
+
+    // Default ring rotation leaves them pointing to <0, 0, 1>
+    if (this.rings) {
+      q.setFromUnitVectors(Ecliptic.NORTH, np);
+      this.rings.object3d.rotation.setFromQuaternion(q);
+    }
+  };
+}();
 
 // Private
 

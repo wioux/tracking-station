@@ -35,23 +35,26 @@ SystemBrowser = function(ui, body, jd) {
   this.animate();
 };
 
-SystemBrowser.prototype.update = function(jd) {
-  var oldCenter = this.camera.controls.target.clone();
-  this.root.updateObject3d(this, jd, new THREE.Vector3(0, 0, 0));
+SystemBrowser.prototype.update = function() {
+  var prevJd;
 
-  this.pan(this.camera.controls.target, true);
-  this.render();
+  return function(jd) {
+    // Only map jd to date if result will be different
+    Math.floor(jd) != prevJd && this.ui.system.setJulianDay(jd);
+    prevJd = Math.floor(jd);
 
-  this.ui.system.setJulianDay(jd);
-};
+    this.root.updateObject3d(this, jd, new THREE.Vector3(0, 0, 0));
+
+    this.pan(this.camera.controls.target, true);
+    this.render();
+  };
+}();
 
 SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
   this.camera.controls.target = body.object3d.position;
   this.camera.controls.minDistance = 2*body.bodyRadius(this);
-  this.pan(body.object3d.position, function() {
-    this.camera.controls.update();
-  });
+  this.pan(body.object3d.position);
 
   this.ui.system.setFocus(body);
 };
@@ -110,9 +113,6 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   camera.controls = new THREE.OrbitControls(camera, renderer.domElement);
   camera.controls.enablePan = false;
   camera.controls.zoomSpeed = 2.0;
-  camera.controls.addEventListener('change', function() {
-    self.render();
-  });
 
   this.scene = scene;
   this.renderer = renderer;
@@ -179,39 +179,43 @@ SystemBrowser.prototype.bindEvents = function() {
   }, false);
 };
 
-SystemBrowser.prototype.pan = function(position, immediate, callback) {
-  var connect = position.clone().sub(this.focusPosition);
-  var direction = connect.clone().normalize();
-  var length = connect.length();
+SystemBrowser.prototype.pan = function() {
+  var connect = new THREE.Vector3();
+  var direction = new THREE.Vector3();
+  var ds = new THREE.Vector3();
+  var focusPosition = new THREE.Vector3();
 
-  if (typeof immediate == 'function') {
-    callback = immediate;
-    immediate = false;
-  }
+  return function(position, immediate, callback) {
+    connect.copy(position).sub(focusPosition);
+    direction.copy(connect).normalize();
+    focusPosition.copy(position);
 
-  this.focusPosition = position.clone();
+    if (typeof immediate == 'function') {
+      callback = immediate;
+      immediate = false;
+    }
 
-  if (immediate) {
-    this.camera.position.add(connect);
-    return callback && callback.call(this);
-  }
+    if (immediate) {
+      this.camera.position.add(connect);
+      return callback && callback.call(this);
+    }
 
-  var steps = 15;
-  var ds = length / steps;
+    var steps = 15;
+    ds.copy(connect).multiplyScalar(1 / steps);
 
-  var self = this;
-  var animate = function() {
-    self.camera.position.addScaledVector(direction, ds);
-    self.render();
+    var self = this;
+    var animate = function() {
+      self.camera.position.add(ds);
 
-    if (--steps)
-      requestAnimationFrame(animate);
-    else
-      callback && callback.call(self);
+      if (--steps)
+        requestAnimationFrame(animate);
+      else
+        callback && callback.call(self);
+    };
+
+    animate();
   };
-
-  animate();
-};
+}();
 
 SystemBrowser.prototype.applyVisibilityFlags = function() {
   var body, localSystem = this.focus.family();
@@ -269,8 +273,9 @@ SystemBrowser.prototype.showBodyTooltip = function(body) {
 
 SystemBrowser.prototype.animate = function() {
   var sys = this;
-  this.animationFrameRequest = requestAnimationFrame(function() { sys.animate() });
+  this.animator = this.animator || function() { sys.animate() };
 
+  this.animationFrameRequest = requestAnimationFrame(this.animator);
   this.update(this.jd);
 };
 

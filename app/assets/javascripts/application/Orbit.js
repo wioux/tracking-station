@@ -6,6 +6,9 @@ Orbit = function(body) {
 Orbit.KM_PER_AU = 1.496e8;
 
 Orbit.prototype.load = function(ephemeris) {
+  if (ephemeris == this.ephemeris)
+    return;
+
   this.ephemeris = ephemeris;
 
   // Eccentricity
