@@ -167,9 +167,10 @@ Body.prototype.createBodyObject = function(ctx) {
       });
     }
 
+    var parts = this.texture ? 50 : 8;
     this.object3d.body.geometry =
       new THREE.BufferGeometry().fromGeometry(
-        new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18)
+        new THREE.SphereGeometry(this.bodyRadius(ctx), parts, parts)
       );
 
     this.object3d.add(this.object3d.body);
