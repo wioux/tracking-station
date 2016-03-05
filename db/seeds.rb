@@ -15,14 +15,14 @@ bodies['Sun'] = Body.create!(name: 'Sun', classification: 'Star')
   bodies[name] = Body.create!(name: name, classification: 'Planet')
 end
 
-['Pluto', 'Aris', 'Ceres'].each do |name|
+['Pluto', 'Eris', 'Ceres'].each do |name|
   bodies[name] = Body.create!(name: name, classification: 'Minor Planet')
 end
 
 ['Luna', 'Deimos', 'Phobos', 'Callisto', 'Europa', 'Ganymede',
  'Io', 'Dione', 'Enceladus', 'Hyperion', 'Iapetus', 'Mimas',
  'Phoebe', 'Rhea', 'Tethys', 'Titan', 'Ariel', 'Miranda', 'Oberon',
- 'Puck', 'Titania', 'Umbriel', 'Proteus', 'Triton', 'Charon', 'Eris'].each do |name|
+ 'Puck', 'Titania', 'Umbriel', 'Proteus', 'Triton', 'Charon'].each do |name|
   bodies[name] = Body.create!(name: name, classification: 'Moon')
 end
 
