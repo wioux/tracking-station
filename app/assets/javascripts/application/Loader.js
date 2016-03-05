@@ -41,6 +41,9 @@ Loader.prototype.createBodyFromJson = function(system, json) {
   if (json.texture)
     body.texture = this.options.textures + json.texture;
 
+  if (json.sprite)
+    body.sprite = this.options.textures + json.sprite;
+
   if (json.parent_id)
     system[json.parent_id].addSatellite(body);
 

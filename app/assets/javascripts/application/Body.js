@@ -179,18 +179,21 @@ Body.prototype.createBodyObject = function(ctx) {
 
 Body.prototype.createIndicatorObject = function(ctx) {
   if (!this.object3d.indicator) {
-    this.object3d.indicator = new THREE.Mesh();
-    this.object3d.indicator.userData.body = this;
-    this.object3d.indicator.geometry =
-      new THREE.BufferGeometry().fromGeometry(
-        new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18)
+    if (this.sprite)
+      this.object3d.indicator = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: ctx.loadTexture(this.sprite) })
       );
-
-    this.object3d.indicator.material = new THREE.MeshBasicMaterial({
-      color: this.color,
-      transparent: true
-    });
-
+    else
+      this.object3d.indicator = new THREE.Mesh(
+        new THREE.BufferGeometry().fromGeometry(
+          new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18)
+        ),
+        new THREE.MeshBasicMaterial({
+          color: this.color,
+          transparent: true
+        })
+      );
+    this.object3d.indicator.userData.body = this;
     this.object3d.add(this.object3d.indicator);
   }
 };

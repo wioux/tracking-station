@@ -191,6 +191,7 @@ bodies['Luna'].update_column(:texture, "moonmap1k.jpg")
 
 bodies['Saturn'].update_column(:ring_texture, "saturnringcolor.jpg")
 
+Body.where(classification: 'Spacecraft').update_all(sprite: 'spacecraft.png')
 
 bodies['Ariel'].ephemerides.create!({
   "jd": 2455779.5,
