@@ -52,21 +52,24 @@ Body.prototype.addSatellite = function(satellite) {
 
 // This body, its ancestors, and its descendants (in no particular order)
 Body.prototype.family = function() {
-  var family = [];
+  if (this.cachedFamily)
+    return this.cachedFamily;
+
+  this.cachedFamily = [];
 
   var body = this;
   while (body) {
-    family.push(body);
+    this.cachedFamily.push(body);
     body = body.orbit.body;
   }
 
   var descendants = this.satellites.slice(0);
   for (var i=0; i < descendants.length; ++i) {
     descendants[i].satellites.forEach(function(x) { descendants.push(x) });
-    family.push(descendants[i]);
+    this.cachedFamily.push(descendants[i]);
   }
 
-  return family;
+  return this.cachedFamily;
 };
 
 Body.prototype.show = function() {
@@ -87,161 +90,126 @@ Body.prototype.unhighlight = function() {
   return wasHighlighted;
 };
 
-// Draw this body at `focus`, and its satellites.
-Body.prototype.drawSystem = function(ctx, focus, jd, newGeometries) {
-  this.shell = this.draw(ctx, focus);
+Body.prototype.updateObject3d = function(ctx, jd, position) {
+  if (this != ctx.root)
+    this.selectEphemeris(ctx.jd);
 
-  for (var body, pos, i=0; i < this.satellites.length; ++i) {
-    body = this.satellites[i];
-    body.selectEphemeris(jd);
-    pos = body.drawOrbit(ctx, focus, newGeometries);
-    body.drawSystem(ctx, pos, jd, newGeometries)
+  if (!this.object3d) {
+    this.object3d = new THREE.Object3D();
+    this.object3d.userData.body = this;
+    ctx.scene.add(this.object3d);
+
+    this.createBodyObject(ctx);
+    this.createIndicatorObject(ctx);
+
+    this.sun && this.createSunLightObject(ctx);
   }
+
+  if (this == ctx.root)
+    this.object3d.position.copy(position);
+  else
+    this.object3d.position.copy(
+      this.orbit.updateObject3d(ctx, this.color)
+    );
+
+  this.rings && this.rings.updateObject3d(ctx, this);
+
+  if (this.npDEC)
+    this.applyAxialTilt(this.npRA, this.npDEC);
+
+  for (var i=0; i < this.satellites.length; ++i)
+    this.satellites[i].updateObject3d(ctx, jd);
 };
 
-Body.prototype.applyAxialTilt = function(ra, dec) {
-  this.np = Equatorial.equinox();
-  this.np.applyAxisAngle(Equatorial.pole(), Math.PI*ra/180.0)
-  this.np.applyAxisAngle(this.np.clone().cross(Equatorial.NORTH), Math.PI*dec/180.0);
+Body.prototype.applyAxialTilt = function() {
+  var raP = new THREE.Vector3();
+  var np = new THREE.Vector3();
+  var q = new THREE.Quaternion();
 
-  // Default rotation leaves body pointing to <0, 1, 0>
-  var q = new THREE.Quaternion().setFromUnitVectors(Ecliptic.SOLSTICE, this.np);
-  this._body.rotation.setFromQuaternion(q);
-};
+  return function(ra, dec) {
+    raP.copy(Equatorial.EQUINOX);
+    raP.applyAxisAngle(Equatorial.NORTH, Math.PI*ra/180.0)
+    np.copy(raP).applyAxisAngle(raP.cross(Equatorial.NORTH), Math.PI*dec/180.0);
+
+    // Default sphere rotation leaves body pointing to <0, 1, 0>
+    q.setFromUnitVectors(Ecliptic.SOLSTICE, np);
+    this.object3d.body.rotation.setFromQuaternion(q);
+
+    // Default ring rotation leaves them pointing to <0, 0, 1>
+    if (this.rings) {
+      q.setFromUnitVectors(Ecliptic.NORTH, np);
+      this.rings.object3d.rotation.setFromQuaternion(q);
+    }
+  };
+}();
 
 // Private
 
-// Compute geometry for this body's orbit around `focus`, and add it to `ctx.scene`.
-// Return this body's position along its orbit
-Body.prototype.drawOrbit = function(ctx, focus, newGeometries) {
-  var orbit = this.orbit;
-  var mja = orbit.mja, mna = orbit.mna;
-
-  var peri = focus.clone().addScaledVector(mja,  ctx.auToPx * orbit.qr);
-  var C    = focus.clone().addScaledVector(mja, -ctx.auToPx * (orbit.a - orbit.qr));
-
-  var geometry = this.getOrbitGeometry(ctx, newGeometries);
-  for (var p, th, i=0; i < geometry.vertices.length; ++i) {
-    th = 2 * Math.PI * i / (geometry.vertices.length - 1);
-
-    p = C.clone()
-      .addScaledVector(mja, ctx.auToPx * orbit.a * Math.cos(th))
-      .addScaledVector(mna, ctx.auToPx * orbit.b * Math.sin(th));
-
-    geometry.vertices[i].copy(p);
-  }
-
-  geometry.verticesNeedUpdate = true;
-
-  var pos = C.clone()
-      .addScaledVector(mja, ctx.auToPx * orbit.a * Math.cos(Math.PI*orbit.ta/180.0))
-      .addScaledVector(mna, ctx.auToPx * orbit.b * Math.sin(Math.PI*orbit.ta/180.0));
-
-  return pos;
-};
-
-// Draw a sphere for this body, as well as a shell around it.
-Body.prototype.draw = function(ctx, pos) {
-  var body = this.getBodyGeometry(ctx);
-  var shell = this.getShellGeometry(ctx);
-
-  shell.position.set(pos.x, pos.y, pos.z);
-  shell.userData.body = this;
-
-  body.position.set(pos.x, pos.y, pos.z);
-  body.userData.body = this;
-
-  if (this.rings)
-    this.rings.drawShadows(ctx, pos)
-
-  if (this.sun)
-    this.getLightSource(ctx).position.set(pos.x, pos.y, pos.z);
-
-  return shell;
-};
-
-Body.prototype.getBodyGeometry = function(ctx) {
-  if (!this._body) {
-    this._body = new THREE.Mesh();
-    this._body.up.set(0, 0, 1);
+Body.prototype.createBodyObject = function(ctx) {
+  if (!this.object3d.body) {
+    this.object3d.body = new THREE.Mesh();
+    this.object3d.body.userData.body = this;
+    this.object3d.body.up.set(0, 0, 1);
 
     if (this.texture) {
-      this._texture = ctx.loadTexture(this.texture);
-      this._body.material = new THREE.MeshLambertMaterial({
-        map: this._texture,
+      this.object3d.texture = ctx.loadTexture(this.texture);
+      this.object3d.body.material = new THREE.MeshLambertMaterial({
+        map: this.object3d.texture,
         emissive: 0xffffff,
-        emissiveMap: this._texture,
+        emissiveMap: this.object3d.texture,
         emissiveIntensity: this.sun ? 1.0 : 0.15
       });
     } else {
-      this._body.material = new THREE.MeshLambertMaterial({
+      this.object3d.body.material = new THREE.MeshLambertMaterial({
         color: this.color,
         emissive: this.color,
         emissiveIntensity: 0.2
       });
     }
 
-    this._body.geometry = new THREE.SphereGeometry(this.bodyRadius(ctx), 18, 18);
+    var parts = this.texture ? 50 : 8;
+    this.object3d.body.geometry =
+      new THREE.BufferGeometry().fromGeometry(
+        new THREE.SphereGeometry(this.bodyRadius(ctx), parts, parts)
+      );
 
-    if (this.npDEC)
-      this.applyAxialTilt(this.npRA, this.npDEC);
-
-    if (this.rings) {
-      this._body.castShadow = true;
-      this._body.add(this.rings.getRing(ctx, this));
-    }
-
-    ctx.scene.add(this._body);
+    this.object3d.add(this.object3d.body);
   }
-  return this._body;
 };
 
-Body.prototype.getShellGeometry = function(ctx) {
-  if (!this._shell) {
-    this._shell = new THREE.Mesh();
-    this._shell.geometry = new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18);
-    this._shell.material = new THREE.MeshBasicMaterial({
-      color: this.color,
-      transparent: true
-    });
-
-    ctx.scene.add(this._shell);
+Body.prototype.createIndicatorObject = function(ctx) {
+  if (!this.object3d.indicator) {
+    if (this.sprite)
+      this.object3d.indicator = new THREE.Sprite(
+        new THREE.SpriteMaterial({ map: ctx.loadTexture(this.sprite) })
+      );
+    else
+      this.object3d.indicator = new THREE.Mesh(
+        new THREE.BufferGeometry().fromGeometry(
+          new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18)
+        ),
+        new THREE.MeshBasicMaterial({
+          color: this.color,
+          transparent: true
+        })
+      );
+    this.object3d.indicator.userData.body = this;
+    this.object3d.add(this.object3d.indicator);
   }
-  return this._shell;
 };
 
-Body.prototype.getOrbitGeometry = function(ctx, newGeometries) {
-  // Not yet sure why, but without recreating this._orbit
-  // the orbit wouldn't render after SystemBrowser#centerCoordinates
-  if (this._orbit && newGeometries)
-    this._orbit.geometry.dispose();
-
-  if (newGeometries || !this._orbit) {
-    if (!this._orbit) {
-      this._orbit = new THREE.Line();
-      this._orbit.material = new THREE.LineBasicMaterial({
-        color: this.color,
-        linewidth: 2,
-        transparent: true
-      });
-
-      ctx.scene.add(this._orbit);
-    }
-
-    this._orbit.geometry = new THREE.Geometry();
-    for (var i=0; i <= 3*250; ++i)
-      this._orbit.geometry.vertices.push(new THREE.Vector3());
+Body.prototype.createRingsObject = function(ctx) {
+  if (!this.object3d.rings) {
+    this.object3d.rings = this.rings.createRingsObject(ctx, this);
+    this.object3d.add(this.object3d.rings);
   }
-
-  return this._orbit.geometry;
 };
 
-Body.prototype.getLightSource = function(ctx) {
-  if (!this._light) {
-    this._light = new THREE.PointLight(0xffffff, 1.0, 0, 0);
-    ctx.scene.add(this._light);
+Body.prototype.createSunLightObject = function(ctx) {
+  if (!this.object3d.sunlight) {
+    this.object3d.sunlight = new THREE.PointLight(0xffffff, 1.0, 0, 0);
+    this.object3d.add(this.object3d.sunlight);
   }
-  return this._light;
 };
 
 Body.prototype.bodyRadius = function(ctx) {
@@ -255,15 +223,16 @@ Body.prototype.shellRadius = function(ctx) {
 
 Body.prototype.scaleShell = function(ctx, pos) {
   var originalRadius = this.shellRadius(ctx);
-  var camDistanceAu = pos.distanceTo(this.shell.position) / ctx.auToPx;
+  var camDistanceAu = pos.distanceTo(this.object3d.position) / ctx.auToPx;
   var newRadius = Math.tan(2 * Math.PI / 180.0) * camDistanceAu * ctx.auToPx / 2;
 
-  this.shell.scale.set(newRadius/originalRadius,
-                       newRadius/originalRadius,
-                       newRadius/originalRadius);
+  var m = this.sprite ? 60 : 1;
+  this.object3d.indicator.scale.set(m*newRadius/originalRadius,
+                                    m*newRadius/originalRadius,
+                                    m*newRadius/originalRadius);
 
   if (this.orbit.body) {
-    camDistanceAu = pos.distanceTo(this.orbit.body.shell.position) / ctx.auToPx;
+    camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / ctx.auToPx;
 
     if (Math.atan(this.orbit.a / camDistanceAu) < 0.035)
       this.flags |= Body.FADED;
@@ -281,18 +250,18 @@ Body.prototype.setVisibility = function(visibility) {
 };
 
 Body.prototype.setOpacity = function(opacity) {
-  this._shell.material.opacity = opacity;
-  this._orbit && (this._orbit.material.opacity = opacity);
+  this.object3d.indicator.material.opacity = opacity;
+  this.orbit.object3d && (this.orbit.object3d.material.opacity = opacity);
 };
 
 Body.prototype.setOrbitVisibility = function(visibility) {
-  this._orbit && (this._orbit.visible = !!visibility);
+  this.orbit.object3d && (this.orbit.object3d.visible = !!visibility);
 };
 
 Body.prototype.setBodyVisibility = function(visibility) {
-  this._body.visible = !!visibility;
+  this.object3d.body.visible = !!visibility;
 };
 
 Body.prototype.setShellVisibility = function(visibility) {
-  this._shell.visible = !!visibility;
+  this.object3d.indicator.visible = !!visibility;
 };

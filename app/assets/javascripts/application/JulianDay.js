@@ -30,13 +30,13 @@ JulianDay = {
     var second = Math.round(UT);
 
     var months = [
-      "January", "February", "March",
-      "April", "May", "June", "July",
-      "August", "September", "October",
-      "November", "December"
+      "Jan", "Feb", "Mar",
+      "Apr", "May", "Jun",
+      "Jul", "Aug", "Sep",
+      "Oct", "Nov", "Dec"
     ];
 
     // new Date(Date.UTC(year, month, day, hour, minute, second));
-    return months[month].substr(0, 3) + ' ' + day + ', ' + year;
+    return months[month] + (day < 10 ? '  ' : ' ') + day + ', ' + year;
   }
 };

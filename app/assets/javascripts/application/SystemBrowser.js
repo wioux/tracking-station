@@ -7,7 +7,6 @@ if (!Float64Array.from)
   };
 
 SystemBrowser = function(ui, body, jd) {
-  window.ctx = this;
   this.root = body;
 
   var loadBodies = function(container, satellites) {
@@ -25,31 +24,37 @@ SystemBrowser = function(ui, body, jd) {
   this.focus = body;
 
   this.initializeUi(ui, body);
+  this.ui.system.setJulianDay(jd);
 
+  this.jd = jd;
   this.update(jd);
-
-  this.ui.system.setJulianDay(jd);
   this.setFocus(body);
+
+  this.setWarp(17);
+  this.clock();
+  this.animate();
 };
 
-SystemBrowser.prototype.update = function(jd) {
-  var oldCenter = this.camera.controls.target.clone();
-  this.root.drawSystem(this, new THREE.Vector3(0, 0, 0), jd, true);
+SystemBrowser.prototype.update = function() {
+  var prevJd;
 
-  this.pan(this.camera.controls.target, true);
-  this.render();
+  return function(jd) {
+    // Only map jd to date if result will be different
+    Math.floor(jd) != prevJd && this.ui.system.setJulianDay(jd);
+    prevJd = Math.floor(jd);
 
-  this.ui.system.setJulianDay(jd);
-};
+    this.root.updateObject3d(this, jd, new THREE.Vector3(0, 0, 0));
+
+    this.pan(this.camera.controls.target, true);
+    this.render();
+  };
+}();
 
 SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
-  this.camera.controls.target = body.shell.position;
+  this.camera.controls.target = body.object3d.position;
   this.camera.controls.minDistance = 2*body.bodyRadius(this);
-  this.pan(body.shell.position, function() {
-    this.centerCoordinates();
-    this.camera.controls.update();
-  });
+  this.pan(body.object3d.position);
 
   this.ui.system.setFocus(body);
 };
@@ -63,7 +68,6 @@ SystemBrowser.prototype.render = function() {
 
 SystemBrowser.prototype.initializeUi = function(ui, body) {
   this.auToPx = 1e3;
-//  this.auToPx = 1e11;
 
   this.createHtmlComponents(ui, body);
   this.createWebGLComponents(this.canvas, this.auToPx);
@@ -109,9 +113,6 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   camera.controls = new THREE.OrbitControls(camera, renderer.domElement);
   camera.controls.enablePan = false;
   camera.controls.zoomSpeed = 2.0;
-  camera.controls.addEventListener('change', function() {
-    self.render();
-  });
 
   this.scene = scene;
   this.renderer = renderer;
@@ -154,6 +155,22 @@ SystemBrowser.prototype.bindEvents = function() {
       self.showBodyTooltip(intersects[0].object.userData.body);
   });
 
+  document.addEventListener('keydown', function(e) {
+    switch(e.which) {
+    case 188:
+      self.setWarp(self.warp - 1);
+      break;
+
+    case 190:
+      self.setWarp(self.warp + 1);
+      break;
+    }
+  });
+
+  this.canvas.addEventListener('mousemove', function(e) {
+    self.visualizeRayCastEnabled && self.visualizeRayCast(e);
+  });
+
   window.addEventListener('resize', function() {
     self.camera.aspect = window.innerWidth / window.innerHeight;
     self.camera.updateProjectionMatrix();
@@ -162,50 +179,43 @@ SystemBrowser.prototype.bindEvents = function() {
   }, false);
 };
 
-SystemBrowser.prototype.pan = function(position, immediate, callback) {
-  var connect = position.clone().sub(this.focusPosition);
-  var direction = connect.clone().normalize();
-  var length = connect.length();
+SystemBrowser.prototype.pan = function() {
+  var connect = new THREE.Vector3();
+  var direction = new THREE.Vector3();
+  var ds = new THREE.Vector3();
+  var focusPosition = new THREE.Vector3();
 
-  if (typeof immediate == 'function') {
-    callback = immediate;
-    immediate = false;
-  }
+  return function(position, immediate, callback) {
+    connect.copy(position).sub(focusPosition);
+    direction.copy(connect).normalize();
+    focusPosition.copy(position);
 
-  this.focusPosition = position.clone();
+    if (typeof immediate == 'function') {
+      callback = immediate;
+      immediate = false;
+    }
 
-  if (immediate) {
-    this.camera.position.add(connect);
-    return callback && callback.call(this);
-  }
+    if (immediate) {
+      this.camera.position.add(connect);
+      return callback && callback.call(this);
+    }
 
-  var steps = 15;
-  var ds = length / steps;
+    var steps = 15;
+    ds.copy(connect).multiplyScalar(1 / steps);
 
-  var self = this;
-  var animate = function() {
-    self.camera.position.addScaledVector(direction, ds);
-    self.render();
+    var self = this;
+    var animate = function() {
+      self.camera.position.add(ds);
 
-    if (--steps)
-      requestAnimationFrame(animate);
-    else
-      callback && callback.call(self);
+      if (--steps)
+        requestAnimationFrame(animate);
+      else
+        callback && callback.call(self);
+    };
+
+    animate();
   };
-
-  animate();
-};
-
-SystemBrowser.prototype.centerCoordinates = function() {
-  var translation = this.root.shell.position.clone().sub(this.focusPosition);
-  this.root.drawSystem(this, translation, this.ui.system.jd, true);
-
-  this.camera.position.sub(this.focusPosition);
-  this.focusPosition.set(0, 0, 0);
-
-  this.render();
-};
-
+}();
 
 SystemBrowser.prototype.applyVisibilityFlags = function() {
   var body, localSystem = this.focus.family();
@@ -249,7 +259,7 @@ SystemBrowser.prototype.hideBodyTooltip = function() {
 };
 
 SystemBrowser.prototype.showBodyTooltip = function(body) {
-  var pos = body.shell.position.clone().project(this.camera);
+  var pos = body.object3d.position.clone().project(this.camera);
   this.ui.tooltip.text(body.name);
   this.ui.tooltip.css({
     left: window.innerWidth * (1 + pos.x) / 2,
@@ -259,6 +269,30 @@ SystemBrowser.prototype.showBodyTooltip = function(body) {
 
   body.highlight();
   this.render();
+};
+
+SystemBrowser.prototype.animate = function() {
+  var sys = this;
+  this.animator = this.animator || function() { sys.animate() };
+
+  this.animationFrameRequest = requestAnimationFrame(this.animator);
+  this.update(this.jd);
+};
+
+SystemBrowser.prototype.stopAnimation = function() {
+  cancelAnimationFrame(this.animationFrameRequest);
+};
+
+SystemBrowser.prototype.clock = function() {
+  var self = this, interval = 16;
+  setInterval(function() {
+    self.jd += Math.pow(2, self.warp) / (24*60*60*1000 / interval);
+  }, interval);
+};
+
+SystemBrowser.prototype.setWarp = function(n) {
+  this.warp = Math.max(0, n);
+  this.ui.system.state.warp.text(n);
 };
 
 SystemBrowser.prototype.debugPosition = function(pos, color) {
@@ -336,23 +370,21 @@ SystemBrowser.prototype.debugPlane = function(position, normal, color) {
 
 
 SystemBrowser.prototype.debugEcliptic = function(position, radius) {
-  return this.debugPlane(position, Ecliptic.pole(ctx.auToPx/1000), 0x0000ff);
+  return this.debugPlane(position, Ecliptic.pole(this.auToPx/1000), 0x0000ff);
 };
 
 SystemBrowser.prototype.debugEquatorial = function(position, radius) {
-  return this.debugPlane(position, Equatorial.pole(ctx.auToPx/1000), 0xffffff);
+  return this.debugPlane(position, Equatorial.pole(this.auToPx/1000), 0xffffff);
 };
 
 SystemBrowser.prototype.debugRayCast = function() {
   if (this.visualizeRayCastEnabled) {
     console.log('stopping ray cast visualization');
-    this.canvas.removeEventListener('mousemove', this.visualizeRayCast);
-    return this.visualizeRayCastEnabled = false;
+    this.visualizeRayCastEnabled = false;
+  } else {
+    console.log('visualizing ray casts');
+    this.visualizeRayCastEnabled = true;
   }
-
-  console.log('visualizing ray casts');
-  this.visualizeRayCastEnabled = true;
-  this.canvas.addEventListener('mousemove', this.visualizeRayCast);
 };
 
 SystemBrowser.prototype.visualizeRayCast =  function(e) {
@@ -417,7 +449,7 @@ THREE.PerspectiveCamera.prototype.rayCast = function(objects, mouse) {
     .sub(raycaster.ray.origin).normalize();
 
   var intersects = raycaster
-      .intersectObjects(objects, false)
+      .intersectObjects(objects, true)
       .filter(function(intersect) {
         return intersect.object.visible;
       });
