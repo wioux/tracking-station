@@ -24,6 +24,8 @@ Loader.prototype.createBodyFromJson = function(system, json) {
   body.spacecraft = (json.classification == 'Spacecraft');
   body.sun = (json.classification == 'Star');
 
+  body.info = json.marked_up_info;
+
   body.radiusKm = json.radius_km;
 
   if (json.inner_ring_radius_km) {

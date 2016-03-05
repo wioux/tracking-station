@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160301225734) do
+ActiveRecord::Schema.define(version: 20160305082834) do
 
   create_table "bodies", force: :cascade do |t|
     t.string   "name",                       null: false
@@ -27,6 +27,7 @@ ActiveRecord::Schema.define(version: 20160301225734) do
     t.integer  "parent_id"
     t.datetime "created_at",                 null: false
     t.datetime "updated_at",                 null: false
+    t.text     "info"
   end
 
   create_table "ephemerides", force: :cascade do |t|

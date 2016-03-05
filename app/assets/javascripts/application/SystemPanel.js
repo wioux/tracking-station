@@ -1,30 +1,46 @@
 
 SystemPanel = function(system, ui) {
-  var overlay = _('div', { parent: ui,      class: 'overlay' });
-  var info    = _('div', { parent: overlay, class: 'info' });
+  var sidebar = _('div', { parent: ui,      class: 'sidebar' });
+  var state    = _('div', { parent: sidebar, class: 'state' });
+  var buttons = _('div', { parent: ui, class: 'buttons' });
+  var panel   = _('div', { parent: ui, class: 'info-panel' });
 
-  _('div', { parent: info }, function(container) {
+  _('div', { parent: state }, function(container) {
     _('label', { parent: container }).textContent = 'Date';
-    _('span',  { parent: container, 'data-info': 'date' });
+    _('span',  { parent: container, 'data-state': 'date' });
   });
 
-  _('div', { parent: info }, function(container) {
+  _('div', { parent: state }, function(container) {
     _('label', { parent: container }).textContent = 'Time Warp';
-    _('span',  { parent: container, 'data-info': 'warp' });
+    _('span',  { parent: container, 'data-state': 'warp' });
   });
 
-  _('div', { parent: info }, function(container) {
+  _('div', { parent: state }, function(container) {
     _('label', { parent: container }).textContent = 'Focus';
-    _('span',  { parent: container, 'data-info': 'focus' });
+    _('span',  { parent: container, 'data-state': 'focus' });
   });
+
+  _('div', { parent: buttons, class: 'button' }, function(container) {
+    container.textContent = "I";
+  });
+
+  _('h2', { parent: panel });
+  _('h3', { parent: panel }).textContent = 'Info';
+  _('div', { parent: panel, class: 'description' });
 
   this.system = system;
-  this.panel = $(overlay);
-  this.info = {
-    panel: $(info),
-    focus: $(info).find('[data-info=focus]'),
-    date: $(info).find('[data-info=date]'),
-    warp: $(info).find('[data-info=warp]')
+  this.sidebar = $(sidebar);
+  this.panel = {
+    container: $(panel),
+    buttons: $(buttons).find('.button'),
+    name: $(panel).find('h2'),
+    description: $(panel).find('.description')
+  };
+
+  this.state = {
+    focus: $(state).find('[data-state=focus]'),
+    date: $(state).find('[data-state=date]'),
+    warp: $(state).find('[data-state=warp]')
   };
 
   this.initializeBodyList(system.root);
@@ -33,12 +49,15 @@ SystemPanel = function(system, ui) {
 
 SystemPanel.prototype.setJulianDay = function(jd) {
   this.jd = jd;
-  this.info.date.text(JulianDay.toString(jd));
+  this.state.date.text(JulianDay.toString(jd));
 };
 
 SystemPanel.prototype.setFocus = function(body) {
-  this.info.focus.text(body.name);
-  this.info.focus.trigger('change');
+  this.panel.name.text(body.name.toUpperCase());
+  this.panel.description.html(body.info);
+  this.panel.description.prop('scrollTop', 0);
+  this.state.focus.text(body.name);
+  this.state.focus.trigger('change');
 };
 
 
@@ -46,7 +65,7 @@ SystemPanel.prototype.setFocus = function(body) {
 
 SystemPanel.prototype.initializeBodyList = function(root) {
   var list = _('div', {
-    'parent': this.panel,
+    'parent': this.sidebar,
     'class': 'body-list',
     'children': [_('ul')]
   }).children[0];
@@ -78,9 +97,9 @@ SystemPanel.prototype.initializeBodyList = function(root) {
 SystemPanel.prototype.bindEvents = function() {
   var self = this,
       system = this.system,
-      list = $(this.panel).find('.body-list');
+      list = this.sidebar.find('.body-list');
 
-  this.panel.on('change', '.body-list', function(e) {
+  this.sidebar.on('change', '.body-list', function(e) {
     var body = system.bodies[e.target.name];
 
     var toggle = function(body, display) {
@@ -94,10 +113,9 @@ SystemPanel.prototype.bindEvents = function() {
     };
 
     toggle(body, e.target.checked);
-    system.render();
   });
 
-  this.panel.on('click', '.body-list', function(e) {
+  this.sidebar.on('click', '.body-list', function(e) {
     var li = e.target;
     if (!li.matches('input') && !li.matches('ul')) {
       while (!li.matches('li'))
@@ -109,9 +127,16 @@ SystemPanel.prototype.bindEvents = function() {
     }
   });
 
-  $(this.info.focus).on('change', function() {
+  $(this.state.focus).on('change', function() {
     $(list).find('li.focused').removeClass('focused');
     $(list).find('li > input[type=checkbox][name='+system.focus.name+']').
       parent().addClass('focused');
+  });
+
+
+  this.panel.container.css('display', 'none');
+  this.panel.buttons.on('click', function(e) {
+    self.panel.container.toggle();
+    $(this).toggleClass('selected');
   });
 };

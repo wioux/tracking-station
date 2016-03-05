@@ -292,7 +292,7 @@ SystemBrowser.prototype.clock = function() {
 
 SystemBrowser.prototype.setWarp = function(n) {
   this.warp = Math.max(0, n);
-  this.ui.system.info.warp.text(n);
+  this.ui.system.state.warp.text(n);
 };
 
 SystemBrowser.prototype.debugPosition = function(pos, color) {
