@@ -226,9 +226,10 @@ Body.prototype.scaleShell = function(ctx, pos) {
   var camDistanceAu = pos.distanceTo(this.object3d.position) / ctx.auToPx;
   var newRadius = Math.tan(2 * Math.PI / 180.0) * camDistanceAu * ctx.auToPx / 2;
 
-  this.object3d.indicator.scale.set(newRadius/originalRadius,
-                                    newRadius/originalRadius,
-                                    newRadius/originalRadius);
+  var m = this.sprite ? 60 : 1;
+  this.object3d.indicator.scale.set(m*newRadius/originalRadius,
+                                    m*newRadius/originalRadius,
+                                    m*newRadius/originalRadius);
 
   if (this.orbit.body) {
     camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / ctx.auToPx;
