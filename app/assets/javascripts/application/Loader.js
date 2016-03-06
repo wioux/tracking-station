@@ -24,6 +24,7 @@ Loader.prototype.createBodyFromJson = function(system, json) {
   body.id = json.id;
   body.spacecraft = (json.classification == 'Spacecraft');
   body.sun = (json.classification == 'Star');
+  body.major = json.classification.match(/Planet/);
 
   body.info = json.marked_up_info;
 
