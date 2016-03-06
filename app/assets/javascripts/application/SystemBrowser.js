@@ -234,24 +234,26 @@ SystemBrowser.prototype.centerCoordinates = function() {
 };
 
 SystemBrowser.prototype.applyVisibilityFlags = function() {
-  var body, localSystem = this.focus.family();
-  var r = this.focus.scaleShell(this, this.camera.position);
-  var op = Math.max(0.0, Math.min(0.5, r / 9.0));
-  if (op < 0.01)
-    op = 0.0;
+  var body, localSystem = this.focus.localSystem();
+  var focusR = this.focus.scaleIndicator(this, this.camera.position, 2);
+  var fadeOpacity = Math.min(0.5, focusR / 9.0);
+  fadeOpacity = (fadeOpacity < 0.025) ? 0 : fadeOpacity;
+
   for (var id in this.bodies) {
     body = this.bodies[id];
-    body.scaleShell(this, this.camera.position);
+    body.scaleIndicator(this, this.camera.position, body.highlighted ? 1.5 : 0.7);
+    body.setVisibility(!(body.flags & (Body.HIDDEN | Body.FADED)));
 
-    if (body.highlighted) {
-      body.setOpacity(1.0);
-    } else if (localSystem.indexOf(body) == -1) {
-      body.setOpacity(op);
-      body.setVisibility(!(body.flags & (Body.HIDDEN | Body.FADED)));
-      op == 0 && body.setVisibility(false);
+    if (localSystem.indexOf(body) == -1) {
+      body.setOrbitOpacity(fadeOpacity);
+      body.setIndicatorOpacity(body == this.root || body.major ? 0.5 : fadeOpacity);
+      if (fadeOpacity == 0) {
+        body.setOrbitVisibility(false);
+        body == this.root || body.major || body.setIndicatorVisibility(false);
+      }
     } else {
-      body.setOpacity(0.5);
-      body.setVisibility(!(body.flags & (Body.HIDDEN | Body.FADED)));
+      body.setOrbitOpacity(0.5);
+      body.setIndicatorOpacity(0.5);
     }
   }
 };
