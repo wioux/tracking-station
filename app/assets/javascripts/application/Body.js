@@ -147,16 +147,11 @@ Body.prototype.createBodyObject = function(ctx) {
     if (this.texture) {
       this.object3d.texture = ctx.loadTexture(this.texture);
       this.object3d.body.material = new THREE.MeshLambertMaterial({
-        map: this.object3d.texture,
-        emissive: 0xffffff,
-        emissiveMap: this.object3d.texture,
-        emissiveIntensity: this.sun ? 1.0 : 0.15
+        map: this.object3d.texture
       });
     } else {
       this.object3d.body.material = new THREE.MeshLambertMaterial({
-        color: this.color,
-        emissive: this.color,
-        emissiveIntensity: 0.2
+        color: this.color
       });
     }
 
