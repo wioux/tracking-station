@@ -116,16 +116,10 @@ SystemPanel.prototype.bindEvents = function() {
     toggle(body, e.target.checked);
   });
 
-  this.sidebar.on('click', '.body-list', function(e) {
-    var li = e.target;
-    if (!li.matches('input') && !li.matches('ul')) {
-      while (!li.matches('li'))
-        li = li.parentNode;
-
-      var id = $(li).find('input[type=checkbox]').attr('name');
-      var body = system.bodies[parseInt(id)];
-      system.setFocus(body);
-    }
+  this.sidebar.on('click', '.body-list li', function(e) {
+    var id = $(e.target).find('input[type=checkbox]').attr('name');
+    var body = system.bodies[parseInt(id)];
+    system.setFocus(body);
   });
 
   $(this.state.focus).on('change', function() {
