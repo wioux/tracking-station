@@ -21,6 +21,7 @@ Loader.prototype.createBodyFromJson = function(system, json) {
   var body = new Body(json.name);
   system[json.id] = body;
 
+  body.id = json.id;
   body.spacecraft = (json.classification == 'Spacecraft');
   body.sun = (json.classification == 'Star');
 

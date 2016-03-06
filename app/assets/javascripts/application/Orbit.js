@@ -1,5 +1,5 @@
-Orbit = function(body) {
-  this.body = body;
+Orbit = function() {
+  this.body = null;
   this.ephemerides = [];
 };
 
@@ -59,12 +59,17 @@ Orbit.prototype.load = function(ephemeris) {
 // Update mean/true anomaly to Julian Day
 Orbit.prototype.update = function(jd) {
   var newMA = this.ma + this.n * (jd - this.jd);
+  while (newMA > 360)
+    newMA -= 360;
+
   var newEA = Orbit.solveEA(this.ec, newMA);
 
   var E = newEA * Math.PI / 180.0;
   var x = Math.sqrt(1 + this.ec)*Math.sin(E/2),
       y = Math.sqrt(1 - this.ec)*Math.cos(E/2);
   var newTA = (180.0 / Math.PI) * 2 * Math.atan2(x, y);
+  while (newTA < 0)
+    newTA += 360;
 
   this.ea = newEA; // save, for debugging
   this.ma = newMA;
@@ -75,6 +80,11 @@ Orbit.prototype.update = function(jd) {
 Orbit.prototype.updateObject3d = function(ctx, color) {
   if (!this.object3d)
     this.createOrbitObject(ctx, color);
+
+  if (this.object3d.parent != this.body.object3d) {
+    this.object3d.parent.remove(this.object3d);
+    this.body.object3d.add(this.object3d);
+  }
 
   var mja = this.mja, mna = this.mna, geometry = this.object3d.geometry;
   var C   = mja.clone().multiplyScalar(-ctx.auToPx * (this.a - this.qr));
@@ -136,7 +146,7 @@ Orbit.solveEA = function(ec, ma) {
   ma = ma * Math.PI / 180.0;
 
   var ea = (ec < 0.8) ? ma : Math.PI;
-  var f = ea - ec*Math.sin(ma) - ma;
+  var f = ea - ec*Math.sin(ea) - ma;
   for (var i=0; i < 50; ++i) {
     ea = ea - f/(1 - ec*Math.cos(ea));
     f = ea - ec*Math.sin(ea) - ma;

@@ -43,7 +43,18 @@ SystemBrowser.prototype.update = function() {
     Math.floor(jd) != prevJd && this.ui.system.setJulianDay(jd);
     prevJd = Math.floor(jd);
 
-    this.root.updateObject3d(this, jd, new THREE.Vector3(0, 0, 0));
+    for (var bodyId in this.bodies) {
+      var body = this.bodies[bodyId];
+
+      if (body == this.root)
+        continue;
+
+      body.selectEphemeris(jd);
+      if (body.orbit.ephemeris.central_body_id != body.orbit.body.id)
+        this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
+    }
+
+    this.root.updateObject3d(this, new THREE.Vector3(0, 0, 0));
 
     this.pan(this.camera.controls.target, true);
     this.render();

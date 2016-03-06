@@ -9,8 +9,9 @@ http://wioux.github.io/tracking-station/
 ### Other TODO
   * "Events" info panel for spacecraft
   * "Spacecraft" or "Missions" info panel
-  * Dynamic changes to system hierarchy (orbital insertion)
-  * Ephemeride population
+  * Tool to help with fetching/loading horizons spacecraft data
+    (T0-T1 around body 1, T2-T3 around body 2, etc..)
+  * Events (popup showing maneuver delta v, closest approach, etc)
   * Select date
   * "Warp to Here"
   * Peri/Apoapsis indicators

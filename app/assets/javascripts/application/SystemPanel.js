@@ -75,11 +75,12 @@ SystemPanel.prototype.initializeBodyList = function(root) {
       return;
 
     var name = root.name;
+    var id = root.id;
     var li = _('li', {
       'class': 'indent-'+indent
     });
 
-    var check = _('input', { 'parent': li, 'type': 'checkbox', 'name': name });
+    var check = _('input', { 'parent': li, 'type': 'checkbox', 'name': id });
     check.checked = true;
     name == 'Sun' && (check.disabled = true);
 
@@ -106,7 +107,7 @@ SystemPanel.prototype.bindEvents = function() {
       display ? body.show() : body.hide();
 
       body.satellites.forEach(function(satellite) {
-        var child = $(list).find('input[name='+satellite.name+']');
+        var child = $(list).find('input[name='+satellite.id+']');
         toggle(satellite, display && child.prop('checked'));
         child.prop('disabled', !display);
       });
@@ -122,14 +123,14 @@ SystemPanel.prototype.bindEvents = function() {
         li = li.parentNode;
 
       var id = $(li).find('input[type=checkbox]').attr('name');
-      var body = system.bodies[id];
+      var body = system.bodies[parseInt(id)];
       system.setFocus(body);
     }
   });
 
   $(this.state.focus).on('change', function() {
     $(list).find('li.focused').removeClass('focused');
-    $(list).find('li > input[type=checkbox][name='+system.focus.name+']').
+    $(list).find('li > input[type=checkbox][name='+system.focus.id+']').
       parent().addClass('focused');
   });
 
