@@ -22,6 +22,7 @@ SystemBrowser = function(ui, body, jd) {
 
   this.root = body;
   this.focus = body;
+  this.rootPosition = new THREE.Vector3();
 
   this.initializeUi(ui, body);
   this.ui.system.setJulianDay(jd);
@@ -54,7 +55,7 @@ SystemBrowser.prototype.update = function() {
         this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
     }
 
-    this.root.updateObject3d(this, new THREE.Vector3(0, 0, 0));
+    this.root.updateObject3d(this, this.rootPosition);
 
     this.pan(this.camera.controls.target, true);
     this.render();
@@ -65,7 +66,7 @@ SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
   this.camera.controls.target = body.object3d.position;
   this.camera.controls.minDistance = 2*body.bodyRadius(this);
-  this.pan(body.object3d.position);
+  this.pan(body.object3d.position, function() { this.centerCoordinates() });
 
   this.ui.system.setFocus(body);
 };
@@ -227,6 +228,10 @@ SystemBrowser.prototype.pan = function() {
     animate();
   };
 }();
+
+SystemBrowser.prototype.centerCoordinates = function() {
+  this.rootPosition.sub(this.focus.object3d.position);
+};
 
 SystemBrowser.prototype.applyVisibilityFlags = function() {
   var body, localSystem = this.focus.family();
