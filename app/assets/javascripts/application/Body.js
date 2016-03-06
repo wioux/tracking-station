@@ -2,15 +2,13 @@
 // lift scaleShell / rename
 // lose the "draw" terminology
 
-Body = function(name, orbitElements) {
-  this.id = name;
+Body = function(name) {
+  this.id = 0;
   this.name = name;
   this.color = 'gray';
 
   this.ephemerides = [];
   this.orbit = new Orbit();
-  for (var key in (orbitElements || {}))
-    this.orbit[key] = orbitElements[key];
 
   this.radiusKm = 0.002;
   this.spacecraft = false;
@@ -45,8 +43,18 @@ Body.prototype.selectEphemeris = function(jd) {
 };
 
 Body.prototype.addSatellite = function(satellite) {
-  satellite.orbit.body = this;
+  var oldParent;
+  if ((oldParent = satellite.orbit.body)) {
+    oldParent.satellites.splice(oldParent.satellites.indexOf(satellite), 1);
+    oldParent.cachedFamily = null;
+  }
+
   this.satellites.push(satellite);
+  satellite.orbit.body = this;
+
+  if (this.cachedFamily)
+    this.cachedFamily.push(satellite);
+
   return satellite;
 };
 
@@ -90,10 +98,7 @@ Body.prototype.unhighlight = function() {
   return wasHighlighted;
 };
 
-Body.prototype.updateObject3d = function(ctx, jd, position) {
-  if (this != ctx.root)
-    this.selectEphemeris(ctx.jd);
-
+Body.prototype.updateObject3d = function(ctx, position) {
   if (!this.object3d) {
     this.object3d = new THREE.Object3D();
     this.object3d.userData.body = this;
@@ -118,7 +123,7 @@ Body.prototype.updateObject3d = function(ctx, jd, position) {
     this.applyAxialTilt(this.npRA, this.npDEC);
 
   for (var i=0; i < this.satellites.length; ++i)
-    this.satellites[i].updateObject3d(ctx, jd);
+    this.satellites[i].updateObject3d(ctx);
 };
 
 Body.prototype.applyAxialTilt = function() {

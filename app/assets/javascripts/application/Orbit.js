@@ -1,5 +1,5 @@
-Orbit = function(body) {
-  this.body = body;
+Orbit = function() {
+  this.body = null;
   this.ephemerides = [];
 };
 
@@ -75,6 +75,11 @@ Orbit.prototype.update = function(jd) {
 Orbit.prototype.updateObject3d = function(ctx, color) {
   if (!this.object3d)
     this.createOrbitObject(ctx, color);
+
+  if (this.object3d.parent != this.body.object3d) {
+    this.object3d.parent.remove(this.object3d);
+    this.body.object3d.add(this.object3d);
+  }
 
   var mja = this.mja, mna = this.mna, geometry = this.object3d.geometry;
   var C   = mja.clone().multiplyScalar(-ctx.auToPx * (this.a - this.qr));
