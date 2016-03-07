@@ -22,6 +22,7 @@ PlanetaryRing.prototype.updateObject3d = function() {
 
 PlanetaryRing.prototype.createRingsObject = function(ctx, body) {
   if (!this.object3d) {
+    var emissivecolor = 0xffffff;
     this.object3d = new THREE.Mesh();
     this.object3d.up.set(0, 0, 1);
 
@@ -31,7 +32,12 @@ PlanetaryRing.prototype.createRingsObject = function(ctx, body) {
                                   30, 30);
     this.object3d.material = new THREE.MeshPhongMaterial({
       map: ctx.loadTexture(this.texture),
-      side: THREE.DoubleSide
+      side: THREE.DoubleSide,
+      transparent: true,
+      opacity: 0.4,
+      emissive: emissivecolor,
+      emissiveMap: ctx.loadTexture(this.texture),
+      emissiveIntensity: 0.2
     });
     this.object3d.rotation.set(-Math.PI/2, 0, 0);
 
