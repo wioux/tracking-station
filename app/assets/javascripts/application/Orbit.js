@@ -132,9 +132,7 @@ Orbit.prototype.createOrbitObject = function(ctx, color) {
     });
 
     this.object3d.geometry = new THREE.Geometry();
-
-    var segments = Math.max(720, 180 * this.a);
-    for (var i=0; i <= segments; ++i)
+    for (var i=0; i <= 360; ++i)
       this.object3d.geometry.vertices.push(new THREE.Vector3());
 
     this.body.object3d.add(this.object3d);
