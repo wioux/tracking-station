@@ -126,9 +126,6 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   camera.controls.enablePan = false;
   camera.controls.zoomSpeed = 2.0;
 
-  var light = new THREE.AmbientLight(0x2a2a2a);
-  scene.add(light);
-
   this.scene = scene;
   this.renderer = renderer;
   this.camera = camera;

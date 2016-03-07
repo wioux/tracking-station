@@ -71,6 +71,8 @@ THREE.SweptRingGeometry = function ( innerRadius, outerRadius, thetaSegments, ph
 			var v2 = segment + thetaSegments + 1;
 			var v3 = segment + thetaSegments + 2;
 
+			this.faces.push( new THREE.Face3( v2, v1, v3, [ n.clone(), n.clone(), n.clone() ] ) );
+			this.faceVertexUvs[ 0 ].push( [ uvs[ v2 ].clone(), uvs[ v1 ].clone(), uvs[ v3 ].clone() ] );
 			this.faces.push( new THREE.Face3( v1, v2, v3, [ n.clone(), n.clone(), n.clone() ] ) );
 			this.faceVertexUvs[ 0 ].push( [ uvs[ v1 ].clone(), uvs[ v2 ].clone(), uvs[ v3 ].clone() ] );
 
@@ -78,6 +80,8 @@ THREE.SweptRingGeometry = function ( innerRadius, outerRadius, thetaSegments, ph
 			v2 = segment + thetaSegments + 2;
 			v3 = segment + 1;
 
+			this.faces.push( new THREE.Face3( v2, v1, v3, [ n.clone(), n.clone(), n.clone() ] ) );
+			this.faceVertexUvs[ 0 ].push( [ uvs[ v2 ].clone(), uvs[ v1 ].clone(), uvs[ v3 ].clone() ] );
 			this.faces.push( new THREE.Face3( v1, v2, v3, [ n.clone(), n.clone(), n.clone() ] ) );
 			this.faceVertexUvs[ 0 ].push( [ uvs[ v1 ].clone(), uvs[ v2 ].clone(), uvs[ v3 ].clone() ] );
 
