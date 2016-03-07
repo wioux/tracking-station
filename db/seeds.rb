@@ -165,7 +165,7 @@ end
 bodies['Sun'].update_column(:color, '0xffffff')
 bodies['Mercury'].update_column(:color, '0x00ff00')
 bodies['Venus'].update_column(:color, '0xffff00')
-bodies['Earth'].update_column(:color, '0x0000ff')
+bodies['Earth'].update_column(:color, '0x00ccff')
 bodies['Mars'].update_column(:color, '0xff0000')
 bodies['Jupiter'].update_column(:color, '0xa52a2a')
 bodies['Saturn'].update_column(:color, '0xffa500')

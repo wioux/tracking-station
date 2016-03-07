@@ -1,6 +1,4 @@
 // lift .selectEphemeris calls
-// lift scaleShell / rename
-// lose the "draw" terminology
 
 Body = function(name) {
   this.id = 0;
@@ -44,40 +42,30 @@ Body.prototype.selectEphemeris = function(jd) {
 
 Body.prototype.addSatellite = function(satellite) {
   var oldParent;
-  if ((oldParent = satellite.orbit.body)) {
+  if ((oldParent = satellite.orbit.body))
     oldParent.satellites.splice(oldParent.satellites.indexOf(satellite), 1);
-    oldParent.cachedFamily = null;
-  }
 
   this.satellites.push(satellite);
   satellite.orbit.body = this;
 
-  if (this.cachedFamily)
-    this.cachedFamily.push(satellite);
-
   return satellite;
 };
 
-// This body, its ancestors, and its descendants (in no particular order)
-Body.prototype.family = function() {
-  if (this.cachedFamily)
-    return this.cachedFamily;
-
-  this.cachedFamily = [];
-
-  var body = this;
-  while (body) {
-    this.cachedFamily.push(body);
-    body = body.orbit.body;
+Body.prototype.descendants = function() {
+  var descendants = [];
+  var satellites = this.satellites.slice(0);
+  for (var i=0; i < satellites.length; ++i) {
+    satellites[i].satellites.forEach(function(x) { satellites.push(x) });
+    descendants.push(satellites[i]);
   }
+  return descendants;
+};
 
-  var descendants = this.satellites.slice(0);
-  for (var i=0; i < descendants.length; ++i) {
-    descendants[i].satellites.forEach(function(x) { descendants.push(x) });
-    this.cachedFamily.push(descendants[i]);
-  }
-
-  return this.cachedFamily;
+Body.prototype.localSystem = function() {
+  var root = this;
+  while (!root.major && root.orbit.body)
+    root = root.orbit.body;
+  return root.descendants();
 };
 
 Body.prototype.show = function() {
@@ -159,16 +147,11 @@ Body.prototype.createBodyObject = function(ctx) {
     if (this.texture) {
       this.object3d.texture = ctx.loadTexture(this.texture);
       this.object3d.body.material = new THREE.MeshLambertMaterial({
-        map: this.object3d.texture,
-        emissive: 0xffffff,
-        emissiveMap: this.object3d.texture,
-        emissiveIntensity: this.sun ? 1.0 : 0.15
+        map: this.object3d.texture
       });
     } else {
       this.object3d.body.material = new THREE.MeshLambertMaterial({
-        color: this.color,
-        emissive: this.color,
-        emissiveIntensity: 0.2
+        color: this.color
       });
     }
 
@@ -226,10 +209,10 @@ Body.prototype.shellRadius = function(ctx) {
   return Math.tan(1 * Math.PI / 180.0) * ctx.auToPx;
 };
 
-Body.prototype.scaleShell = function(ctx, pos) {
+Body.prototype.scaleIndicator = function(ctx, pos, arc) {
   var originalRadius = this.shellRadius(ctx);
   var camDistanceAu = pos.distanceTo(this.object3d.position) / ctx.auToPx;
-  var newRadius = Math.tan(2 * Math.PI / 180.0) * camDistanceAu * ctx.auToPx / 2;
+  var newRadius = Math.tan(arc * Math.PI / 180.0) * camDistanceAu * ctx.auToPx;
 
   var m = this.sprite ? 60 : 1;
   this.object3d.indicator.scale.set(m*newRadius/originalRadius,
@@ -251,12 +234,20 @@ Body.prototype.scaleShell = function(ctx, pos) {
 Body.prototype.setVisibility = function(visibility) {
   this.setOrbitVisibility(visibility);
   this.setBodyVisibility(visibility);
-  this.setShellVisibility(visibility);
+  this.setIndicatorVisibility(visibility);
 };
 
 Body.prototype.setOpacity = function(opacity) {
-  this.object3d.indicator.material.opacity = opacity;
+  this.setOrbitOpacity(opacity);
+  this.setIndicatorOpacity(opacity);
+};
+
+Body.prototype.setOrbitOpacity = function(opacity) {
   this.orbit.object3d && (this.orbit.object3d.material.opacity = opacity);
+};
+
+Body.prototype.setIndicatorOpacity = function(opacity) {
+  this.object3d.indicator.material.opacity = opacity;
 };
 
 Body.prototype.setOrbitVisibility = function(visibility) {
@@ -267,6 +258,6 @@ Body.prototype.setBodyVisibility = function(visibility) {
   this.object3d.body.visible = !!visibility;
 };
 
-Body.prototype.setShellVisibility = function(visibility) {
+Body.prototype.setIndicatorVisibility = function(visibility) {
   this.object3d.indicator.visible = !!visibility;
 };

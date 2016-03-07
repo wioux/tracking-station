@@ -117,7 +117,14 @@ SystemPanel.prototype.bindEvents = function() {
   });
 
   this.sidebar.on('click', '.body-list li', function(e) {
-    var id = $(e.target).find('input[type=checkbox]').attr('name');
+    if ($(e.target).is('input[type=checkbox]'))
+      return;
+
+    var li = e.target;
+    while (li.nodeName != 'LI')
+      li = li.parentNode;
+
+    var id = $(li).find('input[type=checkbox]').attr('name');
     var body = system.bodies[parseInt(id)];
     system.setFocus(body);
   });
