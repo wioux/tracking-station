@@ -76,6 +76,19 @@ SystemBrowser.prototype.render = function() {
   this.renderer.render(this.scene, this.camera);
 };
 
+SystemBrowser.prototype.createMilkyWay = function(texture) {
+  var mesh = new THREE.Mesh();
+  mesh.geometry = new THREE.SphereGeometry(200*this.auToPx, 360, 360);
+  mesh.material = new THREE.MeshLambertMaterial({
+    color: 0xffffff,
+    side: THREE.BackSide,
+    map: this.loadTexture(texture)
+  });
+  mesh.rotation.set(Math.PI/2, 0, 0); // not quite correct but it'll look ok for now
+  this.scene.add(mesh);
+};
+
+
 // private methods
 
 SystemBrowser.prototype.initializeUi = function(ui, body) {
