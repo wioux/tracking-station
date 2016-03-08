@@ -462,31 +462,38 @@ SystemBrowser.prototype.visualizeRayCast =  function(e) {
   this.debugPosition(pos, intersects.length ? 0x00ff00 : 0xff0000);
 };
 
-THREE.PerspectiveCamera.prototype.rayCast = function(objects, mouse) {
+THREE.PerspectiveCamera.prototype.rayCast = function() {
   var raycaster = new THREE.Raycaster();
-
   var f64CamWorld = new THREE.Matrix4();
   var f64CamProjection = new THREE.Matrix4();
-  f64CamWorld.elements = Float64Array.from(this.matrixWorld.elements);
-  f64CamProjection.elements = Float64Array.from(this.projectionMatrix.elements);
-
   var f64Proj = new THREE.Matrix4();
+  f64CamWorld.elements = Float64Array.from(f64CamWorld.elements);
+  f64CamProjection.elements = Float64Array.from(f64CamProjection.elements);
   f64Proj.elements = Float64Array.from(f64Proj.elements);
-  f64Proj.multiplyMatrices(f64CamWorld, f64Proj.getInverse(f64CamProjection));
 
-  raycaster.ray.origin
-    .setFromMatrixPosition(f64CamWorld);
+  return function(objects, mouse) {
+    for (var i=0; i < 16; ++i) {
+      f64CamWorld.elements[i] = this.matrixWorld.elements[i];
+      f64CamProjection.elements[i] = this.projectionMatrix.elements[i];
+    }
 
-  raycaster.ray.direction
-    .set(mouse.x, mouse.y, 0.5)
-    .applyProjection(f64Proj)
-    .sub(raycaster.ray.origin).normalize();
+    f64Proj.identity()
+      .multiplyMatrices(f64CamWorld, f64Proj.getInverse(f64CamProjection));
 
-  var intersects = raycaster
-      .intersectObjects(objects, true)
-      .filter(function(intersect) {
-        return intersect.object.visible;
-      });
+    raycaster.ray.origin
+      .setFromMatrixPosition(f64CamWorld);
 
-  return intersects;
-};
+    raycaster.ray.direction
+      .set(mouse.x, mouse.y, 0.5)
+      .applyProjection(f64Proj)
+      .sub(raycaster.ray.origin).normalize();
+
+    var intersects = raycaster
+        .intersectObjects(objects, true)
+        .filter(function(intersect) {
+          return intersect.object.visible;
+        });
+
+    return intersects;
+  }
+}();
