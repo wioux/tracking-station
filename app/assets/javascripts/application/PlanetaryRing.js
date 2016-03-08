@@ -34,10 +34,10 @@ PlanetaryRing.prototype.createRingsObject = function(ctx, body) {
       map: ctx.loadTexture(this.texture),
       side: THREE.DoubleSide,
       transparent: true,
-      opacity: 0.4,
+      opacity: 0.55,
       emissive: emissivecolor,
       emissiveMap: ctx.loadTexture(this.texture),
-      emissiveIntensity: 0.2
+      emissiveIntensity: 0.4
     });
     this.object3d.rotation.set(-Math.PI/2, 0, 0);
 

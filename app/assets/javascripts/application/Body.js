@@ -144,16 +144,18 @@ Body.prototype.createBodyObject = function(ctx) {
     this.object3d.body.userData.body = this;
     this.object3d.body.up.set(0, 0, 1);
 
+    var props = {};
     if (this.texture) {
-      this.object3d.texture = ctx.loadTexture(this.texture);
-      this.object3d.body.material = new THREE.MeshLambertMaterial({
-        map: this.object3d.texture
-      });
+      props.map = ctx.loadTexture(this.texture);
+      if (this.sun) {
+        props.emissive = 0xffffff;
+        props.emissiveMap = props.map;
+        props.emissiveIntensity = 1.0;
+      }
     } else {
-      this.object3d.body.material = new THREE.MeshLambertMaterial({
-        color: this.color
-      });
+      props.color = this.color;
     }
+    this.object3d.body.material = new THREE.MeshLambertMaterial(props);
 
     var parts = this.texture ? 50 : 8;
     this.object3d.body.geometry =
