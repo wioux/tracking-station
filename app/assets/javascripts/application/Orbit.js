@@ -1,6 +1,8 @@
 Orbit = function() {
   this.body = null;
   this.ephemerides = [];
+  this.C = new THREE.Vector3();
+  this.satellitePosition = new THREE.Vector3();
 };
 
 Orbit.KM_PER_AU = 1.496e8;
@@ -78,6 +80,9 @@ Orbit.prototype.update = function(jd) {
 };
 
 Orbit.prototype.updateObject3d = function(ctx, color) {
+  if (!this.body)
+    return;
+
   if (!this.object3d)
     this.createOrbitObject(ctx, color);
 
@@ -87,28 +92,26 @@ Orbit.prototype.updateObject3d = function(ctx, color) {
   }
 
   var mja = this.mja, mna = this.mna, geometry = this.object3d.geometry;
-  var C   = mja.clone().multiplyScalar(-ctx.auToPx * (this.a - this.qr));
+  var C   = this.C.copy(mja).multiplyScalar(-ctx.auToPx * (this.a - this.qr));
 
   if (this.lastPositionedEphemeris != this.ephemeris) {
     this.lastPositionedEphemeris = this.ephemeris;
     for (var p, th, i=0; i < geometry.vertices.length; ++i) {
       th = 2 * Math.PI * i / (geometry.vertices.length - 1);
 
-      p = C.clone()
+      this.object3d.geometry.vertices[i].copy(C)
         .addScaledVector(mja, ctx.auToPx * this.a * Math.cos(th))
         .addScaledVector(mna, ctx.auToPx * this.b * Math.sin(th));
-
-      this.object3d.geometry.vertices[i].copy(p);
     }
 
     this.object3d.geometry.verticesNeedUpdate = true;
   }
 
-  var pos = this.body.object3d.position.clone().add(C)
-      .addScaledVector(mja, ctx.auToPx * this.a * Math.cos(Math.PI*this.ta/180.0))
-      .addScaledVector(mna, ctx.auToPx * this.b * Math.sin(Math.PI*this.ta/180.0));
-
-  return pos;
+  this.satellitePosition
+    .copy(this.body.object3d.position)
+    .add(C)
+    .addScaledVector(mja, ctx.auToPx * this.a * Math.cos(Math.PI*this.ta/180.0))
+    .addScaledVector(mna, ctx.auToPx * this.b * Math.sin(Math.PI*this.ta/180.0));
 };
 
 // Private
