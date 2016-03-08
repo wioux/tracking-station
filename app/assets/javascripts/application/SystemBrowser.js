@@ -106,7 +106,7 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   scene.up.set(0, 0, 1);
 
   var camera = new THREE.PerspectiveCamera(
-    90 /* fov */,
+    70 /* fov */,
     window.innerWidth / window.innerHeight /* ar */,
     auToPx/1000000 /* near clip */, 100*auToPx /* far clip */
   );
@@ -244,7 +244,7 @@ SystemBrowser.prototype.applyVisibilityFlags = function() {
 
   for (var id in this.bodies) {
     body = this.bodies[id];
-    body.scaleIndicator(this, this.camera.position, body.highlighted ? 1.5 : 0.7);
+    body.scaleIndicator(this, this.camera.position, body.highlighted ? 1.0 : 0.7);
     body.setVisibility(!(body.flags & (Body.HIDDEN | Body.FADED)));
 
     if (localSystem.indexOf(body) == -1) {
