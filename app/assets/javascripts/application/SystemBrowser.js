@@ -36,31 +36,28 @@ SystemBrowser = function(ui, body, jd) {
   this.animate();
 };
 
-SystemBrowser.prototype.update = function() {
-  var prevJd;
+SystemBrowser.prototype.update = function(jd) {
+  // Only map jd to date if result will be different
+  var startOfDay = Math.floor(jd)
+  startOfDay != this.prevJd && this.ui.system.setJulianDay(jd);
+  this.prevJd = startOfDay;
 
-  return function(jd) {
-    // Only map jd to date if result will be different
-    Math.floor(jd) != prevJd && this.ui.system.setJulianDay(jd);
-    prevJd = Math.floor(jd);
+  for (var bodyId in this.bodies) {
+    var body = this.bodies[bodyId];
 
-    for (var bodyId in this.bodies) {
-      var body = this.bodies[bodyId];
+    if (body == this.root)
+      continue;
 
-      if (body == this.root)
-        continue;
+    body.selectEphemeris(jd);
+    if (body.orbit.ephemeris.central_body_id != body.orbit.body.id)
+      this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
+  }
 
-      body.selectEphemeris(jd);
-      if (body.orbit.ephemeris.central_body_id != body.orbit.body.id)
-        this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
-    }
+  this.root.updateObject3d(this, this.rootPosition);
 
-    this.root.updateObject3d(this, this.rootPosition);
-
-    this.pan(this.camera.controls.target, true);
-    this.render();
-  };
-}();
+  this.pan(this.camera.controls.target, true);
+  this.render();
+};
 
 SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
