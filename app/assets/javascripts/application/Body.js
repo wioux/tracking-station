@@ -45,6 +45,13 @@ Body.prototype.addSatellite = function(satellite) {
   if ((oldParent = satellite.orbit.body))
     oldParent.satellites.splice(oldParent.satellites.indexOf(satellite), 1);
 
+  while (oldParent) {
+    oldParent.localSystemCache = null;
+    oldParent = oldParent.orbit.body;
+  }
+  if (this.localSystemCache)
+    this.localSystemCache.push(satellite);
+
   this.satellites.push(satellite);
   satellite.orbit.body = this;
 
@@ -62,10 +69,15 @@ Body.prototype.descendants = function() {
 };
 
 Body.prototype.localSystem = function() {
+  if (this.localSystemCache)
+    return this.localSystemCache;
+
   var root = this;
   while (!root.major && root.orbit.body)
     root = root.orbit.body;
-  return root.descendants();
+
+  this.localSystemCache = root.descendants();
+  return this.localSystemCache;
 };
 
 Body.prototype.show = function() {
