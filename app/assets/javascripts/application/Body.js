@@ -110,12 +110,12 @@ Body.prototype.updateObject3d = function(ctx, position) {
     this.sun && this.createSunLightObject(ctx);
   }
 
+  this.orbit.updateObject3d(ctx, this.color)
+
   if (this == ctx.root)
     this.object3d.position.copy(position);
   else
-    this.object3d.position.copy(
-      this.orbit.updateObject3d(ctx, this.color)
-    );
+    this.object3d.position.copy(this.orbit.satellitePosition);
 
   this.rings && this.rings.updateObject3d(ctx, this);
 
