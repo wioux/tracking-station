@@ -20,6 +20,10 @@ class Body < ActiveRecord::Base
   Markdown = Redcarpet::Markdown.new(markdown_renderer,
                                      Hash[markdown_extensions])
 
+  def self.named(name)
+    where(name: name).take
+  end
+
   def marked_up_info
     Markdown.render(info) if info
   end
