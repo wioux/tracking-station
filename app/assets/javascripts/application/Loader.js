@@ -51,6 +51,7 @@ Loader.prototype.createBodyFromJson = function(system, json) {
 
   if (json.ephemerides) {
     json.ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });
+    json.ephemerides.sort(function(a, b) { return a.jd - b.jd });
     body.addEphemerides(json.ephemerides);
   }
 
