@@ -94,6 +94,12 @@ SystemBrowser.prototype.initializeUi = function(ui, body) {
   this.createHtmlComponents(ui, body);
   this.createWebGLComponents(this.canvas, this.auToPx);
 
+  var bodies = [body];
+  for (var i=0; i < bodies.length; ++i) {
+    bodies[i].createObject3d(this);
+    bodies[i].satellites.forEach(function(x) { bodies.push(x) });
+  }
+
   this.bindEvents(this);
 };
 

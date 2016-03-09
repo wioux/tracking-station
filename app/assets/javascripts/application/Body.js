@@ -98,18 +98,7 @@ Body.prototype.unhighlight = function() {
 };
 
 Body.prototype.updateObject3d = function(ctx, position) {
-  if (!this.object3d) {
-    this.object3d = new THREE.Object3D();
-    this.object3d.userData.body = this;
-    ctx.scene.add(this.object3d);
-
-    this.createBodyObject(ctx);
-    this.createIndicatorObject(ctx);
-
-    this.sun && this.createSunLightObject(ctx);
-  }
-
-  this.orbit.updateObject3d(ctx, this.color)
+  this.orbit.updateObject3d(ctx)
 
   if (this == ctx.root)
     this.object3d.position.copy(position);
@@ -149,68 +138,70 @@ Body.prototype.applyAxialTilt = function() {
 
 // Private
 
+Body.prototype.createObject3d = function(ctx) {
+  this.object3d = new THREE.Object3D();
+  this.object3d.userData.body = this;
+  ctx.scene.add(this.object3d);
+
+  this.createBodyObject(ctx);
+  this.createIndicatorObject(ctx);
+
+  this.orbit.createObject3d(ctx, this.color);
+
+  this.sun && this.createSunLightObject(ctx);
+  this.rings && this.rings.createObject3d(ctx, this);
+}
+
+
 Body.prototype.createBodyObject = function(ctx) {
-  if (!this.object3d.body) {
-    this.object3d.body = new THREE.Mesh();
-    this.object3d.body.userData.body = this;
-    this.object3d.body.up.set(0, 0, 1);
+  this.object3d.body = new THREE.Mesh();
+  this.object3d.body.userData.body = this;
+  this.object3d.body.up.set(0, 0, 1);
 
-    var props = {};
-    if (this.texture) {
-      props.map = ctx.loadTexture(this.texture);
-      if (this.sun) {
-        props.emissive = 0xffffff;
-        props.emissiveMap = props.map;
-        props.emissiveIntensity = 1.0;
-      }
-    } else {
-      props.color = this.color;
+  var props = {};
+  if (this.texture) {
+    props.map = ctx.loadTexture(this.texture);
+    if (this.sun) {
+      props.emissive = 0xffffff;
+      props.emissiveMap = props.map;
+      props.emissiveIntensity = 1.0;
     }
-    this.object3d.body.material = new THREE.MeshLambertMaterial(props);
-
-    var parts = this.texture ? 50 : 8;
-    this.object3d.body.geometry =
-      new THREE.BufferGeometry().fromGeometry(
-        new THREE.SphereGeometry(this.bodyRadius(ctx), parts, parts)
-      );
-
-    this.object3d.add(this.object3d.body);
+  } else {
+    props.color = this.color;
   }
+  this.object3d.body.material = new THREE.MeshLambertMaterial(props);
+
+  var parts = this.texture ? 50 : 8;
+  this.object3d.body.geometry =
+    new THREE.BufferGeometry().fromGeometry(
+      new THREE.SphereGeometry(this.bodyRadius(ctx), parts, parts)
+    );
+
+  this.object3d.add(this.object3d.body);
 };
 
 Body.prototype.createIndicatorObject = function(ctx) {
-  if (!this.object3d.indicator) {
-    if (this.sprite)
-      this.object3d.indicator = new THREE.Sprite(
-        new THREE.SpriteMaterial({ map: ctx.loadTexture(this.sprite) })
-      );
-    else
-      this.object3d.indicator = new THREE.Mesh(
-        new THREE.BufferGeometry().fromGeometry(
-          new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18)
-        ),
-        new THREE.MeshBasicMaterial({
-          color: this.color,
-          transparent: true
-        })
-      );
-    this.object3d.indicator.userData.body = this;
-    this.object3d.add(this.object3d.indicator);
-  }
-};
-
-Body.prototype.createRingsObject = function(ctx) {
-  if (!this.object3d.rings) {
-    this.object3d.rings = this.rings.createRingsObject(ctx, this);
-    this.object3d.add(this.object3d.rings);
-  }
+  if (this.sprite)
+    this.object3d.indicator = new THREE.Sprite(
+      new THREE.SpriteMaterial({ map: ctx.loadTexture(this.sprite) })
+    );
+  else
+    this.object3d.indicator = new THREE.Mesh(
+      new THREE.BufferGeometry().fromGeometry(
+        new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18)
+      ),
+      new THREE.MeshBasicMaterial({
+        color: this.color,
+        transparent: true
+      })
+    );
+  this.object3d.indicator.userData.body = this;
+  this.object3d.add(this.object3d.indicator);
 };
 
 Body.prototype.createSunLightObject = function(ctx) {
-  if (!this.object3d.sunlight) {
-    this.object3d.sunlight = new THREE.PointLight(0xffffff, 1.0, 0, 0);
-    this.object3d.add(this.object3d.sunlight);
-  }
+  this.object3d.sunlight = new THREE.PointLight(0xffffff, 1.0, 0, 0);
+  this.object3d.add(this.object3d.sunlight);
 };
 
 Body.prototype.bodyRadius = function(ctx) {

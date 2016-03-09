@@ -78,15 +78,12 @@ Orbit.prototype.update = function(jd) {
   this.jd = jd;
 };
 
-Orbit.prototype.updateObject3d = function(ctx, color) {
+Orbit.prototype.updateObject3d = function(ctx) {
   if (!this.body)
     return;
 
-  if (!this.object3d)
-    this.createOrbitObject(ctx, color);
-
   if (this.object3d.parent != this.body.object3d) {
-    this.object3d.parent.remove(this.object3d);
+    this.object3d.parent && this.object3d.parent.remove(this.object3d);
     this.body.object3d.add(this.object3d);
   }
 
@@ -124,23 +121,20 @@ Orbit.prototype.calculateAxisVectors = function() {
   this.mna = this.mja.clone().applyAxisAngle(this.oa, Math.PI/2).normalize();
 };
 
-Orbit.prototype.createOrbitObject = function(ctx, color) {
-  if (!this.object3d) {
-    this.object3d = new THREE.Line();
-    this.object3d.material = new THREE.LineBasicMaterial({
-      color: color,
-      linewidth: 2,
-      transparent: true
-    });
+Orbit.prototype.createObject3d = function(ctx, color) {
+  this.object3d = new THREE.Line();
+  this.object3d.material = new THREE.LineBasicMaterial({
+    color: color,
+    linewidth: 2,
+    transparent: true
+  });
 
-    this.object3d.geometry = new THREE.Geometry();
+  this.object3d.geometry = new THREE.Geometry();
 
-    var segments = Math.max(720, 180 * this.a);
-    for (var i=0; i <= segments; ++i)
-      this.object3d.geometry.vertices.push(new THREE.Vector3());
+  for (var i=0; i <= 720; ++i)
+    this.object3d.geometry.vertices.push(new THREE.Vector3());
 
-    this.body.object3d.add(this.object3d);
-  }
+  this.body && this.body.object3d.add(this.object3d);
 }
 
 // Approximate eccentric anomaly from mean anomaly
