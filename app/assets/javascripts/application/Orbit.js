@@ -1,6 +1,5 @@
 Orbit = function() {
   this.body = null;
-  this.ephemerides = [];
   this.C = new THREE.Vector3();
   this.satellitePosition = new THREE.Vector3();
 };

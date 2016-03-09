@@ -1,4 +1,3 @@
-// lift .selectEphemeris calls
 
 Body = function(name) {
   this.id = 0;
