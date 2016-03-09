@@ -28,7 +28,7 @@ Loader.prototype.createBodyFromJson = function(system, json) {
 
   body.info = json.marked_up_info;
 
-  body.radiusKm = json.radius_km;
+  body.radiusKm = json.radius_km || 0.001;
 
   if (json.inner_ring_radius_km) {
     body.rings = new PlanetaryRing(json.inner_ring_radius_km,

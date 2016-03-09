@@ -143,8 +143,6 @@ bodies['Triton'].update_column(:radius_km, 1352.6)
 bodies['Pluto'].update_column(:radius_km, 1186)
 bodies['Charon'].update_column(:radius_km, 605)
 bodies['Ceres'].update_column(:radius_km, 490)
-bodies['Eris'].update_column(:radius_km, 0.001)
-bodies['Juno'].update_column(:radius_km, 0.001)
 
 bodies['Saturn'].tap do |saturn|
   saturn.update_column(:inner_ring_radius_km, saturn.radius_km + 7000);
