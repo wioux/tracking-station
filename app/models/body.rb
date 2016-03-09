@@ -20,8 +20,14 @@ class Body < ActiveRecord::Base
   Markdown = Redcarpet::Markdown.new(markdown_renderer,
                                      Hash[markdown_extensions])
 
+  scope :spacecraft, ->{ where(classification: 'Spacecraft') }
+
   def self.named(name)
-    where(name: name).take
+    find_by(name: name)
+  end
+
+  def self.sun
+    find_by!(name: 'Sun')
   end
 
   def marked_up_info
