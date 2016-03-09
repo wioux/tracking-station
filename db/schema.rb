@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160305082834) do
+ActiveRecord::Schema.define(version: 20160309195846) do
 
   create_table "bodies", force: :cascade do |t|
     t.string   "name",                       null: false
@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(version: 20160305082834) do
     t.datetime "updated_at",                 null: false
     t.text     "info"
     t.string   "sprite"
+    t.string   "horizons_id"
   end
 
   create_table "ephemerides", force: :cascade do |t|

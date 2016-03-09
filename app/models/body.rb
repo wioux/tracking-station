@@ -1,6 +1,8 @@
 class Body < ActiveRecord::Base
-  has_many :ephemerides, foreign_key: :satellite_id
+  include Horizons::Support
 
+  belongs_to :parent, class_name: 'Body'
+  has_many :ephemerides, foreign_key: :satellite_id
 
   markdown_extensions =
     [

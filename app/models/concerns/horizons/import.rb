@@ -1,0 +1,70 @@
+require 'net/http'
+
+module Horizons
+  class Import
+    attr_reader :body, :center
+
+    def initialize(body, center: body.parent)
+      if center.nil?
+        raise Exception.new("center must be given when body.parent is nil")
+      end
+
+      @body = body.horizons_id
+      @center = center.horizons_id
+
+      raise Exception.new("body.horizons_id is nil") if @body.blank?
+      raise Exception.new("center.horizons_id is nil") if @center.blank?
+    end
+
+    # start_time -- Time or "%Y-%m-%d" string
+    # stop_time  -- Time or "%Y-%m-%d" string
+    # step       -- ActiveSupport::Duration or "7 days" etc
+    def fetch(start_time, stop_time, step)
+      start_time = start_time.strftime('%Y-%m-%d') unless start_time.is_a?(String)
+      stop_time = start_time.strftime('%Y-%m-%d') unless stop_time.is_a?(String)
+      step = step.inspect[/\d+ \w/] unless step.is_a?(String)
+
+      uri = self.class.batch_url_for(body, center, start_time, stop_time, step)
+      response = Net::HTTP.get_response(uri)
+
+      unless response.code == '200'
+        raise Exception("horizons(#{body}, #{center}, " <<
+                        "#{start_time}, #{stop_time}, #{step}) " <<
+                        "responded HTTP #{response.code}")
+      end
+
+      self.class.parse_csv(response.body) do |elements|
+        yield(elements)
+      end
+    end
+
+    protected
+
+    def self.batch_url_for(body_id, center_id, start_time, stop_time, step)
+      URI("http://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1" <<
+          "&MAKE_EPHEM='YES'&TABLE_TYPE='ELEMENTS'&OUT_UNITS='AU-D'" <<
+          "&COMMAND='#{body_id}'&CENTER='#{center_id}'&CSV_FORMAT='YES'" <<
+          "&START_TIME='#{start_time}'&STOP_TIME='#{stop_time}'&STEP_SIZE='#{step}'")
+    end
+
+    def self.parse_csv(csv)
+      csv_section = false
+      csv.each_line do |line|
+        next unless csv_section || line =~ /SOE/
+
+        csv_section = true
+        next if line =~ /SOE/
+        return if line =~ /EOE/
+
+        fields = line.split(/\s*,\s*/)
+        elements = {}.tap do |elements|
+          %w(jd date ec qr inc om
+             w tp n ma ta a ad pr).each_with_index do |key, i|
+            elements[key] = fields[i].to_f unless key == 'date'
+          end
+        end
+        yield(elements)
+      end
+    end
+  end
+end
