@@ -48,9 +48,10 @@ SystemBrowser.prototype.update = function(jd) {
     if (body == this.root)
       continue;
 
-    body.selectEphemeris(jd);
-    if (body.orbit.ephemeris.central_body_id != body.orbit.body.id)
+    if (body.selectEphemeris(jd))
       this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
+    else if (body.orbit.body)
+      body.orbit.body.removeSatellite(body);
   }
 
   this.root.updateObject3d(this, this.rootPosition);

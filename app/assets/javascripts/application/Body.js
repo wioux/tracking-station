@@ -32,29 +32,44 @@ Body.prototype.selectEphemeris = function(jd) {
     eph = this.ephemerides[i];
   }
 
-  if (!eph)
-    throw "No ephemeris for "+this.name+" on jd " + jd;
+  if (eph) {
+    this.orbit.load(eph);
+    this.orbit.update(jd);
+  }
 
-  this.orbit.load(eph);
-  this.orbit.update(jd);
+  return eph;
 };
 
 Body.prototype.addSatellite = function(satellite) {
-  var oldParent;
-  if ((oldParent = satellite.orbit.body))
-    oldParent.satellites.splice(oldParent.satellites.indexOf(satellite), 1);
+  if (this.satellites.indexOf(satellite) != -1)
+    return;
 
-  while (oldParent) {
-    oldParent.localSystemCache = null;
-    oldParent = oldParent.orbit.body;
+  if (satellite.orbit.body)
+    satellite.orbit.body.removeSatellite(satellite);
+
+  var parent = this;
+  while (parent) {
+    parent.localSystemCache = null;
+    parent = parent.orbit.body;
   }
-  if (this.localSystemCache)
-    this.localSystemCache.push(satellite);
 
-  this.satellites.push(satellite);
   satellite.orbit.body = this;
+  this.satellites.push(satellite);
 
   return satellite;
+};
+
+Body.prototype.removeSatellite = function(satellite) {
+  var i = this.satellites.indexOf(satellite);
+  if (i != -1) {
+    this.satellites.splice(i, 1);
+
+    var parent = this;
+    while (parent) {
+      parent.localSystemCache = null;
+      parent = parent.orbit.body;
+    }
+  }
 };
 
 Body.prototype.descendants = function() {
