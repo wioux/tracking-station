@@ -106,11 +106,11 @@ Orbit.prototype.updateObject3d = function(ctx, color) {
     this.object3d.geometry.verticesNeedUpdate = true;
   }
 
+  var r = this.a*(1-this.ec*this.ec)/(1+this.ec*Math.cos(Math.PI*this.ta/180.0));
   this.satellitePosition
-    .copy(this.body.object3d.position)
-    .add(C)
-    .addScaledVector(mja, ctx.auToPx * this.a * Math.cos(Math.PI*this.ta/180.0))
-    .addScaledVector(mna, ctx.auToPx * this.b * Math.sin(Math.PI*this.ta/180.0));
+    .copy(mja).applyAxisAngle(this.oa, Math.PI * this.ta / 180.0)
+    .setLength(ctx.auToPx * r)
+    .add(this.body.object3d.position);
 };
 
 // Private
