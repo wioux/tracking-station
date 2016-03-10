@@ -70,6 +70,8 @@ Body.prototype.removeSatellite = function(satellite) {
       parent.localSystemCache = null;
       parent = parent.orbit.body;
     }
+
+    satellite.orbit.body = null;
   }
 };
 
