@@ -48,10 +48,13 @@ SystemBrowser.prototype.update = function(jd) {
     if (body == this.root)
       continue;
 
-    if (body.selectEphemeris(jd))
+    if (body.selectEphemeris(jd)) {
       this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
-    else if (body.orbit.body)
+      body.flags &= ~Body.INVALID;
+    } else if (body.orbit.body) {
       body.orbit.body.removeSatellite(body);
+      body.flags |= Body.INVALID;
+    }
   }
 
   this.root.updateObject3d(this, this.rootPosition);
@@ -261,6 +264,12 @@ SystemBrowser.prototype.applyVisibilityFlags = function() {
 
   for (var id in this.bodies) {
     body = this.bodies[id];
+
+    if (body.flags & Body.INVALID) {
+      body.setVisibility(false);
+      continue;
+    }
+
     body.scaleIndicator(this, this.camera.position, body.highlighted ? 1.0 : 0.7);
     body.setVisibility(!(body.flags & (Body.HIDDEN | Body.FADED)));
 

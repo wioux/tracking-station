@@ -18,6 +18,7 @@ Body = function(name) {
 
 Body.HIDDEN    = 0x01;
 Body.FADED     = 0x02;
+Body.INVALID   = 0x04;
 
 Body.prototype.addEphemerides = function(list) {
   for (var i=0; i < list.length; ++i)
