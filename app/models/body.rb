@@ -1,6 +1,8 @@
 class Body < ActiveRecord::Base
-  has_many :ephemerides, foreign_key: :satellite_id
+  include Horizons::Support
 
+  belongs_to :parent, class_name: 'Body'
+  has_many :ephemerides, foreign_key: :satellite_id
 
   markdown_extensions =
     [
@@ -17,6 +19,16 @@ class Body < ActiveRecord::Base
 
   Markdown = Redcarpet::Markdown.new(markdown_renderer,
                                      Hash[markdown_extensions])
+
+  scope :spacecraft, ->{ where(classification: 'Spacecraft') }
+
+  def self.named(name)
+    find_by(name: name)
+  end
+
+  def self.sun
+    find_by!(name: 'Sun')
+  end
 
   def marked_up_info
     Markdown.render(info) if info

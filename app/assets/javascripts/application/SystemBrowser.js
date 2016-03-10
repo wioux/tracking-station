@@ -48,9 +48,13 @@ SystemBrowser.prototype.update = function(jd) {
     if (body == this.root)
       continue;
 
-    body.selectEphemeris(jd);
-    if (body.orbit.ephemeris.central_body_id != body.orbit.body.id)
+    if (body.selectEphemeris(jd)) {
       this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
+      body.flags &= ~Body.INVALID;
+    } else if (body.orbit.body) {
+      body.orbit.body.removeSatellite(body);
+      body.flags |= Body.INVALID;
+    }
   }
 
   this.root.updateObject3d(this, this.rootPosition);
@@ -93,6 +97,12 @@ SystemBrowser.prototype.initializeUi = function(ui, body) {
 
   this.createHtmlComponents(ui, body);
   this.createWebGLComponents(this.canvas, this.auToPx);
+
+  var bodies = [body];
+  for (var i=0; i < bodies.length; ++i) {
+    bodies[i].createObject3d(this);
+    bodies[i].satellites.forEach(function(x) { bodies.push(x) });
+  }
 
   this.bindEvents(this);
 };
@@ -254,6 +264,12 @@ SystemBrowser.prototype.applyVisibilityFlags = function() {
 
   for (var id in this.bodies) {
     body = this.bodies[id];
+
+    if (body.flags & Body.INVALID) {
+      body.setVisibility(false);
+      continue;
+    }
+
     body.scaleIndicator(this, this.camera.position, body.highlighted ? 1.0 : 0.7);
     body.setVisibility(!(body.flags & (Body.HIDDEN | Body.FADED)));
 
