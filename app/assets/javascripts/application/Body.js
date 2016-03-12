@@ -216,6 +216,18 @@ Body.prototype.createIndicatorObject = function(ctx) {
 
 Body.prototype.createSunLightObject = function(ctx) {
   this.object3d.sunlight = new THREE.PointLight(0xffffff, 1.0, 0, 0);
+  this.object3d.sunlight.flare = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: ctx.loadTexture("/assets/lensflare0_alpha_centered.png"),
+      transparent: true,
+      opacity: 0.7
+    })
+  );
+
+  // specific to Sun / /lensflare0_alpha_centered.png
+  var scale = ctx.auToPx/6.7;
+  this.object3d.sunlight.flare.scale.set(scale, scale, scale);
+  this.object3d.add(this.object3d.sunlight.flare);
   this.object3d.add(this.object3d.sunlight);
 };
 
