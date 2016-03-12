@@ -133,14 +133,11 @@ Body.prototype.updateObject3d = function(ctx, position) {
 };
 
 Body.prototype.applyAxialTilt = function() {
-  var raP = new THREE.Vector3();
   var np = new THREE.Vector3();
   var q = new THREE.Quaternion();
 
   return function(ra, dec) {
-    raP.copy(Equatorial.EQUINOX);
-    raP.applyAxisAngle(Equatorial.NORTH, Math.PI*ra/180.0)
-    np.copy(raP).applyAxisAngle(raP.cross(Equatorial.NORTH), Math.PI*dec/180.0);
+    Coord.equ(np, ra, dec);
 
     // Default sphere rotation leaves body pointing to <0, 1, 0>
     q.setFromUnitVectors(Ecliptic.SOLSTICE, np);

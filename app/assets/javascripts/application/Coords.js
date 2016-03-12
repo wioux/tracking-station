@@ -36,6 +36,27 @@ Equatorial = {
   }
 };
 
+Coord = {
+  equ: function() {
+    var coord = new THREE.Vector3();
+    var axis = new THREE.Vector3();
+    return function(result, ra, dec) {
+      if (arguments.length != 3) {
+        dec = ra;
+        ra = result;
+        result = new THREE.Vector3();
+      }
+
+      coord.copy(Equatorial.EQUINOX);
+      coord.applyAxisAngle(Equatorial.NORTH, Math.PI*ra/180.0);
+      axis.copy(coord).cross(Equatorial.NORTH);
+      coord.applyAxisAngle(axis, Math.PI*dec/180.0);
+
+      return result.copy(coord);
+    }
+  }()
+};
+
 Ecliptic.NORTH = Ecliptic.pole(1);
 Ecliptic.EQUINOX = Ecliptic.equinox(1);
 Ecliptic.SOLSTICE = Ecliptic.solstice(1);
