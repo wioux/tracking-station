@@ -178,7 +178,11 @@ SystemBrowser.prototype.bindEvents = function() {
     }
   });
 
+  var moveCount = 0;
   this.canvas.addEventListener('mousemove', function(e) {
+    if ((moveCount = moveCount++ % 5))
+      return;
+
     var mouse = new THREE.Vector3( e.clientX/window.innerWidth * 2 - 1,
                                   -e.clientY/window.innerHeight * 2 + 1,
                                    0.5);
