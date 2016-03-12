@@ -162,9 +162,9 @@ SystemBrowser.prototype.bindEvents = function() {
   var self = this;
 
   this.canvas.addEventListener('mousedown', function(e) {
-  var mouse = new THREE.Vector3( e.clientX/window.innerWidth * 2 - 1,
-                                -e.clientY/window.innerHeight * 2 + 1,
-                                 0.5);
+    var mouse = new THREE.Vector3( e.clientX/window.innerWidth * 2 - 1,
+                                   -e.clientY/window.innerHeight * 2 + 1,
+                                   0.5);
 
     var intersects = self.camera
         .rayCast(self.scene.children, mouse)
