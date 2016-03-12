@@ -76,7 +76,7 @@ SystemBrowser.prototype.render = function() {
 SystemBrowser.prototype.createMilkyWay = function(texture) {
   var mesh = new THREE.Mesh();
   mesh.up.set(0, 0, 1);
-  mesh.geometry = new THREE.SphereGeometry(1000000*this.auToPx, 360, 360);
+  mesh.geometry = new THREE.SphereGeometry(1000000*this.auToPx, 3, 3);
   mesh.material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
     side: THREE.BackSide,
