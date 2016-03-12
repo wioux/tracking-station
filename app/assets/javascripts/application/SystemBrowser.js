@@ -32,10 +32,7 @@ SystemBrowser.prototype.eachBody = function(action) {
 };
 
 SystemBrowser.prototype.update = function(jd) {
-  // Only map jd to date if result will be different
-  var startOfDay = Math.floor(jd)
-  startOfDay != this.prevJd && this.ui.system.setJulianDay(jd);
-  this.prevJd = startOfDay;
+  this.ui.system.setJulianDay(jd);
 
   for (var bodyId in this.bodies) {
     var body = this.bodies[bodyId];

@@ -48,7 +48,10 @@ SystemPanel = function(system, ui) {
 };
 
 SystemPanel.prototype.setJulianDay = function(jd) {
-  this.state.date.text(JulianDay.toString(jd));
+  var startOfDay = Math.floor(jd)
+  if (startOfDay != this.prevJd)
+    this.state.date.text(JulianDay.toString(jd));
+  this.prevJd = startOfDay;
 };
 
 SystemPanel.prototype.setFocus = function(body) {
