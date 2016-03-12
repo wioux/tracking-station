@@ -43,7 +43,7 @@ SystemPanel = function(system, ui) {
     warp: $(state).find('[data-state=warp]')
   };
 
-  this.initializeBodyList(system.root);
+  this.initializeBodyList(SystemPanel.createTree(system));
   this.bindEvents();
 };
 
@@ -141,4 +141,19 @@ SystemPanel.prototype.bindEvents = function() {
     self.panel.container.toggle();
     $(this).toggleClass('selected');
   });
+};
+
+SystemPanel.createTree = function(system) {
+  var map = {}
+
+  system.eachBody(function() {
+    map[this.id] = { id: this.id, name: this.name, satellites: [] };
+  });
+
+  system.eachBody(function() {
+    if (this != system.root)
+      map[this.parentId || system.root.id].satellites.push(map[this.id]);
+  });
+
+  return map[system.root.id];
 };

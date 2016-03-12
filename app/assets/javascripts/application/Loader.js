@@ -4,11 +4,12 @@ Loader = function(options) {
 };
 
 Loader.prototype.loadBodies = function(callback) {
-  var self = this, bodies = {};
+  var self = this, bodies = [];
   $.get('bodies.json', function(resp) {
     resp.forEach(function(body) {
-      var object = self.createBodyFromJson(bodies, body);
+      var object = self.createBodyFromJson(body);
       window[body.name] = object;
+      bodies.push(object);
     });
 
     callback(bodies);
@@ -17,9 +18,8 @@ Loader.prototype.loadBodies = function(callback) {
 
 // Private
 
-Loader.prototype.createBodyFromJson = function(system, json) {
+Loader.prototype.createBodyFromJson = function(json) {
   var body = new Body(json.name);
-  system[json.id] = body;
 
   body.id = json.id;
   body.spacecraft = (json.classification == 'Spacecraft');
@@ -46,8 +46,7 @@ Loader.prototype.createBodyFromJson = function(system, json) {
   if (json.sprite)
     body.sprite = this.options.textures + json.sprite;
 
-  if (json.parent_id)
-    system[json.parent_id].addSatellite(body);
+  body.parentId = json.parent_id;
 
   if (json.ephemerides) {
     json.ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });

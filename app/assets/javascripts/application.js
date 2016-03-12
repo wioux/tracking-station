@@ -9,7 +9,7 @@ $(document).ready(function() {
     .loadBodies(function(bodies) {
       var jd = Earth.ephemerides[0].jd;
       var container = document.getElementById('ui');
-      window.sys = new SystemBrowser(container, Sun, parseFloat(jd));
+      window.sys = new SystemBrowser(container, bodies, Sun, parseFloat(jd));
       window.sys.createMilkyWay('textures/ESO_-_Milky_Way-Cropped.jpg');
     });
 });

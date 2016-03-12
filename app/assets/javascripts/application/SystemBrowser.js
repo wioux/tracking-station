@@ -6,34 +6,30 @@ if (!Float64Array.from)
     return result;
   };
 
-SystemBrowser = function(ui, body, jd) {
-  this.root = body;
+SystemBrowser = function(ui, bodies, root, jd) {
+  this.bodies = {};
+  for (var i=0; i < bodies.length; ++i)
+    this.bodies[bodies[i].id] = bodies[i];
 
-  var loadBodies = function(container, satellites) {
-    satellites.forEach(function(body) {
-      container[body.id] = body;
-      loadBodies(container, body.satellites);
-    });
-
-    return container;
-  };
-  this.bodies = loadBodies({}, body.satellites);
-  this.bodies[body.id] = body;
-
-  this.root = body;
-  this.focus = body;
+  this.root = root;
+  this.focus = root;
   this.rootPosition = new THREE.Vector3();
 
-  this.initializeUi(ui, body);
+  this.initializeUi(ui, root);
   this.ui.system.setJulianDay(jd);
 
   this.jd = jd;
   this.update(jd);
-  this.setFocus(body);
+  this.setFocus(root);
 
   this.setWarp(17);
   this.clock();
   this.animate();
+};
+
+SystemBrowser.prototype.eachBody = function(action) {
+  for (var id in this.bodies)
+    action.call(this.bodies[id], this.bodies[id]);
 };
 
 SystemBrowser.prototype.update = function(jd) {
@@ -103,17 +99,14 @@ SystemBrowser.prototype.createMilkyWay = function(texture) {
 
 // private methods
 
-SystemBrowser.prototype.initializeUi = function(ui, body) {
+SystemBrowser.prototype.initializeUi = function(ui, root) {
   this.auToPx = 1e3;
 
-  this.createHtmlComponents(ui, body);
+  this.createHtmlComponents(ui, root);
   this.createWebGLComponents(this.canvas, this.auToPx);
 
-  var bodies = [body];
-  for (var i=0; i < bodies.length; ++i) {
-    bodies[i].createObject3d(this);
-    bodies[i].satellites.forEach(function(x) { bodies.push(x) });
-  }
+  var context = this;
+  this.eachBody(function() { this.createObject3d(context) });
 
   this.bindEvents(this);
 };
@@ -273,29 +266,26 @@ SystemBrowser.prototype.applyVisibilityFlags = function() {
   var fadeOpacity = Math.min(0.5, focusR / 9.0);
   fadeOpacity = (fadeOpacity < 0.025) ? 0 : fadeOpacity;
 
-  for (var id in this.bodies) {
-    body = this.bodies[id];
+  var context = this;
+  this.eachBody(function() {
+    if (this.flags & Body.INVALID)
+      return this.setVisibility(false);
 
-    if (body.flags & Body.INVALID) {
-      body.setVisibility(false);
-      continue;
-    }
+    this.scaleIndicator(context, context.camera.position, this.highlighted ? 1.0 : 0.7);
+    this.setVisibility(!(this.flags & (Body.HIDDEN | Body.FADED)));
 
-    body.scaleIndicator(this, this.camera.position, body.highlighted ? 1.0 : 0.7);
-    body.setVisibility(!(body.flags & (Body.HIDDEN | Body.FADED)));
-
-    if (localSystem.indexOf(body) == -1) {
-      body.setOrbitOpacity(fadeOpacity);
-      body.setIndicatorOpacity(body == this.root || body.major ? 0.5 : fadeOpacity);
+    if (localSystem.indexOf(this) == -1) {
+      this.setOrbitOpacity(fadeOpacity);
+      this.setIndicatorOpacity(this == context.root || this.major ? 0.5 : fadeOpacity);
       if (fadeOpacity == 0) {
-        body.setOrbitVisibility(false);
-        body == this.root || body.major || body.setIndicatorVisibility(false);
+        this.setOrbitVisibility(false);
+        this == context.root || this.major || this.setIndicatorVisibility(false);
       }
     } else {
-      body.setOrbitOpacity(0.5);
-      body.setIndicatorOpacity(0.5);
+      this.setOrbitOpacity(0.5);
+      this.setIndicatorOpacity(0.5);
     }
-  }
+  });
 };
 
 SystemBrowser.prototype.loadTexture = function(path) {
@@ -309,8 +299,7 @@ SystemBrowser.prototype.loadTexture = function(path) {
 
 SystemBrowser.prototype.hideBodyTooltip = function() {
   var changed = false;
-  for (var id in this.bodies)
-    changed = this.bodies[id].unhighlight() || changed;
+  this.eachBody(function() { changed = this.unhighlight() || changed });
 
   this.ui.tooltip.css('display', 'none');
   changed && this.render();
