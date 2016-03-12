@@ -16,6 +16,8 @@ http://wioux.github.io/tracking-station/
   * "Warp to Here"
   * Peri/Apoapsis indicators
   * Body thumbnails in sidebar list
+  * Move indicators into orbit
 
 ### Credits
-Planet textures from [James Hastings-Trew](http://planetpixelemporium.com/planets.html)
+* Planet textures from [James Hastings-Trew](http://planetpixelemporium.com/planets.html)
+* Milky Way texture resized from the [ESO Milky Way Panorama](http://www.eso.org/public/images/eso0932a/)
