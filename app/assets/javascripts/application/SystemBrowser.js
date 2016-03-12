@@ -18,12 +18,11 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.initializeUi(ui, root);
   this.ui.system.setJulianDay(jd);
 
-  this.jd = jd;
   this.update(jd);
   this.setFocus(root);
 
-  this.setWarp(17);
-  this.clock();
+  this.clock = new Clock(jd, this.ui.system.state.warp);
+  this.clock.setWarp(17).start();
   this.animate();
 };
 
@@ -201,11 +200,11 @@ SystemBrowser.prototype.bindEvents = function() {
   document.addEventListener('keydown', function(e) {
     switch(e.which) {
     case 188:
-      self.setWarp(self.warp - 1);
+      self.clock.setWarp(self.clock.warp - 1);
       break;
 
     case 190:
-      self.setWarp(self.warp + 1);
+      self.clock.setWarp(self.clock.warp + 1);
       break;
     }
   });
@@ -327,23 +326,11 @@ SystemBrowser.prototype.animate = function() {
   this.animator = this.animator || function() { sys.animate() };
 
   this.animationFrameRequest = requestAnimationFrame(this.animator);
-  this.update(this.jd);
+  this.update(this.clock.jd);
 };
 
 SystemBrowser.prototype.stopAnimation = function() {
   cancelAnimationFrame(this.animationFrameRequest);
-};
-
-SystemBrowser.prototype.clock = function() {
-  var self = this, interval = 16;
-  setInterval(function() {
-    self.jd += Math.pow(2, self.warp) / (24*60*60*1000 / interval);
-  }, interval);
-};
-
-SystemBrowser.prototype.setWarp = function(n) {
-  this.warp = Math.max(0, n);
-  this.ui.system.state.warp.text(n);
 };
 
 SystemBrowser.prototype.debugPosition = function(pos, color) {

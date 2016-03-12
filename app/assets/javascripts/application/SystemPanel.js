@@ -48,7 +48,6 @@ SystemPanel = function(system, ui) {
 };
 
 SystemPanel.prototype.setJulianDay = function(jd) {
-  this.jd = jd;
   this.state.date.text(JulianDay.toString(jd));
 };
 
