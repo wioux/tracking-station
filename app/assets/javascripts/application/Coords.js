@@ -1,7 +1,7 @@
 
 Ecliptic = {
   solstice: function(size) {
-    return new THREE.Vector3(0, 1, 0);
+    return new THREE.Vector3(0, size || 1, 0);
   },
 
   equinox: function(size) {
