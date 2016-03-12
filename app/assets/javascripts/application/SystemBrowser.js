@@ -79,13 +79,24 @@ SystemBrowser.prototype.render = function() {
 
 SystemBrowser.prototype.createMilkyWay = function(texture) {
   var mesh = new THREE.Mesh();
-  mesh.geometry = new THREE.SphereGeometry(200*this.auToPx, 360, 360);
+  mesh.up.set(0, 0, 1);
+  mesh.geometry = new THREE.SphereGeometry(1000000*this.auToPx, 360, 360);
   mesh.material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
     side: THREE.BackSide,
-    map: this.loadTexture(texture)
+    map: this.loadTexture(texture),
+    transparent: true,
+    opacity: 0.4
   });
-  mesh.rotation.set(Math.PI/2, 0, 0); // not quite correct but it'll look ok for now
+
+  var np, q;
+  np = Coord.equ(180.86, 27.13);
+  q = new THREE.Quaternion().setFromUnitVectors(Ecliptic.SOLSTICE, np);
+  mesh.rotation.setFromQuaternion(q);
+
+  // this is not quite right, but ok for now
+  mesh.rotateOnAxis(Ecliptic.SOLSTICE, 190*Math.PI/180.0);
+
   this.scene.add(mesh);
 };
 
