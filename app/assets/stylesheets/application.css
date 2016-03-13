@@ -21,6 +21,8 @@ html, body {
 
 #ui .sidebar {
     position: absolute;
+    top: 0px;
+    left: 0px;
     display: flex;
     flex-flow: column;
     height: 100%;

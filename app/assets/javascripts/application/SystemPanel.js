@@ -28,8 +28,15 @@ SystemPanel = function(system, ui) {
   _('h3', { parent: panel }).textContent = 'Info';
   _('div', { parent: panel, class: 'description' });
 
+  var tooltip = _('div', {
+    'parent': ui,
+    'class': 'body-tooltip',
+    'data-info': 'body-tooltip'
+  });
+
   this.system = system;
   this.sidebar = $(sidebar);
+  this.tooltip = $(tooltip);
   this.panel = {
     container: $(panel),
     buttons: $(buttons).find('.button'),
@@ -44,6 +51,7 @@ SystemPanel = function(system, ui) {
   };
 
   this.initializeBodyList(SystemPanel.createTree(system));
+  this.bindToSystemEvents(system);
   this.bindEvents();
 };
 
@@ -95,6 +103,36 @@ SystemPanel.prototype.initializeBodyList = function(root) {
   };
 
   populate(root, 0);
+};
+
+SystemPanel.prototype.bindToSystemEvents = function() {
+  var ui = this;
+
+  this.system.addEventListener('update', function(e) {
+    ui.setJulianDay(e.jd);
+  });
+
+  this.system.addEventListener('focus', function(e) {
+    ui.setFocus(e.body);
+  });
+
+  this.system.addEventListener('unhighlight', function(e) {
+    ui.tooltip.css('display', 'none');
+  });
+
+  this.system.addEventListener('highlight', function(e) {
+    ui.tooltip
+      .text(e.body.name)
+      .css({
+        left: e.layerX,
+        top: e.layerY,
+        display: 'block'
+      });
+  });
+
+  this.system.clock.addEventListener('warp', function(e) {
+    ui.state.warp.text(e.warp);
+  });
 };
 
 SystemPanel.prototype.bindEvents = function() {

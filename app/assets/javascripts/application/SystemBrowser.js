@@ -25,7 +25,14 @@ SystemBrowser = function(ui, bodies, root, jd) {
 
   this.clock = new Clock();
 
-  this.initializeUi(ui, root);
+  this.auToPx = 1e3;
+
+  this.createWebGLComponents(this.canvas, this.auToPx);
+
+  var context = this;
+  this.eachBody(function() { this.createObject3d(context) });
+
+  this.bindEvents();
 };
 
 SystemBrowser.prototype.start = function(jd) {
@@ -107,37 +114,13 @@ SystemBrowser.prototype.createMilkyWay = function(texture) {
 
 // private methods
 
-SystemBrowser.prototype.initializeUi = function(ui, root) {
-  this.auToPx = 1e3;
-
-  this.createHtmlComponents(ui, root);
-  this.createWebGLComponents(this.canvas, this.auToPx);
-
-  var context = this;
-  this.eachBody(function() { this.createObject3d(context) });
-
-  this.bindEvents(this);
-};
-
-SystemBrowser.prototype.createHtmlComponents = function(ui, root) {
-  var systemPanel = new SystemPanel(this, ui);
+SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   var canvas  = _('div', {
     'parent': ui,
     'class': 'canvas',
     'style': 'height: 100%; width: 100%'
   });
 
-  var tooltip = _('div', {
-    'parent': ui,
-    'class': 'body-tooltip',
-    'data-info': 'body-tooltip'
-  });
-
-  this.ui = { system: systemPanel, tooltip: $(tooltip) };
-  this.canvas = canvas;
-};
-
-SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   var scene = new THREE.Scene();
   scene.up.set(0, 0, 1);
 
