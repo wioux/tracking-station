@@ -15,6 +15,13 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.focus = root;
   this.rootPosition = new THREE.Vector3();
 
+  this.listeners = {
+    'update': [],
+    'highlight': [],
+    'focus': [],
+    'warp': []
+  };
+
   this.initializeUi(ui, root);
   this.ui.system.setJulianDay(jd);
 
@@ -24,6 +31,10 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.clock = new Clock(jd, this.ui.system.state.warp);
   this.clock.setWarp(17).start();
   this.animate();
+};
+
+SystemBrowser.prototype.addEventListener = function(type, callback) {
+  this.listeners[type].push(callback);
 };
 
 SystemBrowser.prototype.eachBody = function(action) {
@@ -52,6 +63,7 @@ SystemBrowser.prototype.update = function(jd) {
   this.root.updateObject3d(this, this.rootPosition);
 
   this.pan(this.camera.controls.target, true);
+  this.dispatchEvent({ type: 'update', jd: jd });
   this.render();
 };
 
@@ -60,7 +72,7 @@ SystemBrowser.prototype.setFocus = function(body) {
   this.camera.controls.target = body.object3d.position;
   this.camera.controls.minDistance = 2*body.bodyRadius(this);
   this.pan(body.object3d.position, function() { this.centerCoordinates() });
-
+  this.dispatchEvent({ type: 'focus', body: body });
   this.ui.system.setFocus(body);
 };
 
@@ -189,18 +201,23 @@ SystemBrowser.prototype.bindEvents = function() {
         });
 
     self.hideBodyTooltip();
-    if (intersects.length)
+    if (intersects.length) {
+      self.dispatchEvent({ type: 'highlight',
+                           body: intersects[0].object.userData.body });
       self.showBodyTooltip(intersects[0].object.userData.body);
+    }
   });
 
   document.addEventListener('keydown', function(e) {
     switch(e.which) {
     case 188:
       self.clock.setWarp(self.clock.warp - 1);
+      self.dispatchEvent({ type: 'warp' });
       break;
 
     case 190:
       self.clock.setWarp(self.clock.warp + 1);
+      self.dispatchEvent({ type: 'warp' });
       break;
     }
   });
@@ -326,6 +343,11 @@ SystemBrowser.prototype.animate = function() {
 
 SystemBrowser.prototype.stopAnimation = function() {
   cancelAnimationFrame(this.animationFrameRequest);
+};
+
+SystemBrowser.prototype.dispatchEvent = function(e) {
+  for (var i=0; i < this.listeners[e.type].length; ++i)
+    this.listeners[e.type][i](e);
 };
 
 SystemBrowser.prototype.localizeMouse = function(e) {
