@@ -18,17 +18,21 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.listeners = {
     'update': [],
     'highlight': [],
+    'unhighlight': [],
     'focus': [],
-    'warp': []
+    'mousemove': []
   };
 
+  this.clock = new Clock();
+
   this.initializeUi(ui, root);
+};
 
+SystemBrowser.prototype.start = function(jd) {
   this.update(jd);
-  this.setFocus(root);
+  this.setFocus(this.root);
 
-  this.clock = new Clock(jd, this.ui.system.state.warp);
-  this.clock.setWarp(17).start();
+  this.clock.setWarp(17).start(jd);
   this.animate();
 };
 
@@ -42,8 +46,6 @@ SystemBrowser.prototype.eachBody = function(action) {
 };
 
 SystemBrowser.prototype.update = function(jd) {
-  this.ui.system.setJulianDay(jd);
-
   for (var bodyId in this.bodies) {
     var body = this.bodies[bodyId];
 
@@ -72,7 +74,6 @@ SystemBrowser.prototype.setFocus = function(body) {
   this.camera.controls.minDistance = 2*body.bodyRadius(this);
   this.pan(body.object3d.position, function() { this.centerCoordinates() });
   this.dispatchEvent({ type: 'focus', body: body });
-  this.ui.system.setFocus(body);
 };
 
 SystemBrowser.prototype.render = function() {
@@ -190,6 +191,10 @@ SystemBrowser.prototype.bindEvents = function() {
     if ((moveCount = moveCount++ % 5))
       return;
 
+    var changed = false;
+    sys.eachBody(function() { changed = this.unhighlight() || changed });
+    changed && self.dispatchEvent({ type: 'unhighlight' });
+
     var mouse = self.localizeMouse(e);
     var intersects = self.camera
         .rayCast(self.scene.children, mouse)
@@ -197,11 +202,15 @@ SystemBrowser.prototype.bindEvents = function() {
           return t.object.userData.body;
         });
 
-    self.hideBodyTooltip();
     if (intersects.length) {
+      var body = intersects[0].object.userData.body;
+      var pos = body.object3d.position.clone().project(sys.camera);
       self.dispatchEvent({ type: 'highlight',
-                           body: intersects[0].object.userData.body });
-      self.showBodyTooltip(intersects[0].object.userData.body);
+                           body: body,
+                           layerX: window.innerWidth * (1 + pos.x) / 2,
+                           layerY: window.innerHeight * (1 - pos.y) / 2 + 20
+                         });
+      body.highlight();
     }
   });
 
@@ -209,12 +218,10 @@ SystemBrowser.prototype.bindEvents = function() {
     switch(e.which) {
     case 188:
       self.clock.setWarp(self.clock.warp - 1);
-      self.dispatchEvent({ type: 'warp' });
       break;
 
     case 190:
       self.clock.setWarp(self.clock.warp + 1);
-      self.dispatchEvent({ type: 'warp' });
       break;
     }
   });
@@ -307,27 +314,6 @@ SystemBrowser.prototype.loadTexture = function(path) {
   }
 
   return this._textureLoader.load(path);
-};
-
-SystemBrowser.prototype.hideBodyTooltip = function() {
-  var changed = false;
-  this.eachBody(function() { changed = this.unhighlight() || changed });
-
-  this.ui.tooltip.css('display', 'none');
-  changed && this.render();
-};
-
-SystemBrowser.prototype.showBodyTooltip = function(body) {
-  var pos = body.object3d.position.clone().project(this.camera);
-  this.ui.tooltip.text(body.name);
-  this.ui.tooltip.css({
-    left: window.innerWidth * (1 + pos.x) / 2,
-    top: window.innerHeight * (1 - pos.y) / 2 + 20,
-    display: 'block'
-  });
-
-  body.highlight();
-  this.render();
 };
 
 SystemBrowser.prototype.animate = function() {

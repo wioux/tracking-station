@@ -1,13 +1,19 @@
 
-Clock = function(jd, ui) {
-  this.ui = ui;
-  this.jd = jd;
+Clock = function() {
+  this.jd = null;
   this.warp = 1;
   this.updateInterval = 16;
   this.resetAfter = this.resetBefore = null;
+  this.listeners = { 'warp': [] };
 };
 
-Clock.prototype.start = function() {
+Clock.prototype.addEventListener = function(type, callback) {
+  this.listeners[type].push(callback);
+};
+
+Clock.prototype.start = function(jd) {
+  this.jd = jd;
+
   var self = this;
   this.intervalId = setInterval(function() { self.update() }, this.updateInterval);
   return this;
@@ -17,7 +23,7 @@ Clock.prototype.setWarp = function(n) {
   this.warp = n = Math.max(0, n);
   this.dt = Math.pow(2, n) / (24*60*60*1000 / this.updateInterval);
   this.resetAfter = this.resetBefore = null;
-  this.ui.text(n);
+  this.dispatchEvent({ type: 'warp', warp: n });
   return this;
 };
 
@@ -43,4 +49,9 @@ Clock.prototype.update = function() {
     this.setWarp(this.warp);
   else if (this.resetBefore !== null && this.jd <= this.resetBefore)
     this.setWarp(this.warp);
+};
+
+Clock.prototype.dispatchEvent = function(e) {
+  for (var i=0; i < this.listeners[e.type].length; ++i)
+    this.listeners[e.type][i](e);
 };
