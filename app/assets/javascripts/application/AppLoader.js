@@ -3,9 +3,9 @@ AppLoader = function(options) {
   this.options = options || {};
 };
 
-AppLoader.prototype.loadBodies = function(callback) {
+AppLoader.prototype.loadBodies = function(href, callback) {
   var self = this, bodies = [];
-  $.get('bodies.json', function(resp) {
+  $.get(href, function(resp) {
     resp.forEach(function(body) {
       var object = self.createBodyFromJson(body);
       window[body.name] = object;

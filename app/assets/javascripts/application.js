@@ -5,16 +5,25 @@
 //= require_tree ./application
 
 $(document).ready(function() {
-  new AppLoader({ textures: 'textures/' })
-    .loadBodies(function(bodies) {
-      var jd = Earth.ephemerides[0].jd;
-      var container = document.getElementById('ui');
+  $('.tracking-station').each(function() {
+    var container = this;
+    var root = parseInt($(this).data('root'));
 
-      window.sys = new SystemBrowser(container, bodies, Sun);
-      window.sys.createMilkyWay('textures/ESO_-_Milky_Way-Cropped.jpg');
+    new AppLoader({ textures: '/textures/' }).
+      loadBodies($(this).data('href'), function(bodies) {
+        var jd = 2455794.330554163;
 
-      window.ui = new SystemPanel(sys, container);
+        root = bodies.find(function(x) { return x.id == root });
 
-      sys.start(jd);
-    });
+        window.sys = new SystemBrowser(container, bodies, root);
+        window.sys.createMilkyWay('/textures/ESO_-_Milky_Way-Cropped.jpg');
+
+        window.ui = new SystemPanel(sys, container);
+
+        if (!root.sun)
+          sys.setAmbientLight(0xffffff);
+
+        sys.start(jd);
+      });
+  });
 });

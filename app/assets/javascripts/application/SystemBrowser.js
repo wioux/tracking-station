@@ -26,8 +26,7 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.clock = new Clock();
 
   this.auToPx = 1e3;
-
-  this.createWebGLComponents(this.canvas, this.auToPx);
+  this.createWebGLComponents(ui);
 
   var context = this;
   this.eachBody(function() { this.createObject3d(context) });
@@ -83,6 +82,10 @@ SystemBrowser.prototype.setFocus = function(body) {
   this.dispatchEvent({ type: 'focus', body: body });
 };
 
+SystemBrowser.prototype.setAmbientLight = function(color) {
+  this.light.color = new THREE.Color(color);
+};
+
 SystemBrowser.prototype.render = function() {
   this.applyVisibilityFlags()
   this.renderer.render(this.scene, this.camera);
@@ -114,44 +117,41 @@ SystemBrowser.prototype.createMilkyWay = function(texture) {
 
 // private methods
 
-SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
+SystemBrowser.prototype.createWebGLComponents = function(ui) {
   var canvas  = _('div', {
     'parent': ui,
     'class': 'canvas',
     'style': 'height: 100%; width: 100%'
   });
+  this.canvas = canvas;
 
   var scene = new THREE.Scene();
   scene.up.set(0, 0, 1);
+  this.scene = scene;
 
   var camera = new THREE.PerspectiveCamera(
     70 /* fov */,
     canvas.clientWidth / canvas.clientHeight /* ar */,
-    auToPx/1000000 /* near clip */, 100*auToPx /* far clip */
+    this.auToPx/1000000 /* near clip */, 100*this.auToPx /* far clip */
   );
-  camera.up.set(0, 0, 1);
-  camera.position.z = 2 * auToPx;
-  this.focusPosition = new THREE.Vector3(0, 0, 0);
+  this.camera = camera;
+  this.setInitialCameraPosition();
 
   var renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   renderer.shadowMap.enabled = true,
   renderer.shadowMap.type = THREE.PCFShadowMap;
   canvas.appendChild(renderer.domElement);
+  this.renderer = renderer;
 
   // Tuck controls under this.camera
-  var self = this;
   camera.controls = new THREE.OrbitControls(camera, renderer.domElement);
   camera.controls.enablePan = false;
   camera.controls.zoomSpeed = 2.0;
 
   var light = new THREE.AmbientLight(0x1a1a1a);
   scene.add(light);
-
-  this.canvas = canvas;
-  this.scene = scene;
-  this.renderer = renderer;
-  this.camera = camera;
+  this.light = light;
 };
 
 SystemBrowser.prototype.bindEvents = function() {
@@ -190,8 +190,8 @@ SystemBrowser.prototype.bindEvents = function() {
       var pos = body.object3d.position.clone().project(sys.camera);
       self.dispatchEvent({ type: 'highlight',
                            body: body,
-                           layerX: window.innerWidth * (1 + pos.x) / 2,
-                           layerY: window.innerHeight * (1 - pos.y) / 2 + 20
+                           layerX: self.canvas.clientWidth * (1 + pos.x) / 2,
+                           layerY: self.canvas.clientHeight * (1 - pos.y) / 2 + 20
                          });
       body.highlight();
     }
@@ -288,6 +288,15 @@ SystemBrowser.prototype.applyVisibilityFlags = function() {
       this.setIndicatorOpacity(0.5);
     }
   });
+};
+
+SystemBrowser.prototype.setInitialCameraPosition = function() {
+  // This is magical but works pretty well
+  var r = Math.pow(150 * this.root.bodyRadius(this), 1.19);
+
+  this.camera.up.set(0, 0, 1);
+  this.camera.position.z = r;
+  this.focusPosition = new THREE.Vector3(0, 0, 0);
 };
 
 SystemBrowser.prototype.loadTexture = function(path) {
