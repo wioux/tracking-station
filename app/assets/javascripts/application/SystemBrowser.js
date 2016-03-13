@@ -109,7 +109,11 @@ SystemBrowser.prototype.initializeUi = function(ui, root) {
 
 SystemBrowser.prototype.createHtmlComponents = function(ui, root) {
   var systemPanel = new SystemPanel(this, ui);
-  var canvas  = _('div', { parent: ui,      class: 'canvas' });
+  var canvas  = _('div', {
+    'parent': ui,
+    'class': 'canvas',
+    'style': 'height: 100%; width: 100%'
+  });
 
   var tooltip = _('div', {
     'parent': ui,
@@ -127,7 +131,7 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
 
   var camera = new THREE.PerspectiveCamera(
     70 /* fov */,
-    window.innerWidth / window.innerHeight /* ar */,
+    canvas.clientWidth / canvas.clientHeight /* ar */,
     auToPx/1000000 /* near clip */, 100*auToPx /* far clip */
   );
   camera.up.set(0, 0, 1);
@@ -135,7 +139,7 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   this.focusPosition = new THREE.Vector3(0, 0, 0);
 
   var renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   renderer.shadowMap.enabled = true,
   renderer.shadowMap.type = THREE.PCFShadowMap;
   canvas.appendChild(renderer.domElement);
@@ -149,6 +153,7 @@ SystemBrowser.prototype.createWebGLComponents = function(canvas, auToPx) {
   var light = new THREE.AmbientLight(0x1a1a1a);
   scene.add(light);
 
+  this.canvas = canvas;
   this.scene = scene;
   this.renderer = renderer;
   this.camera = camera;
@@ -158,10 +163,7 @@ SystemBrowser.prototype.bindEvents = function() {
   var self = this;
 
   this.canvas.addEventListener('mousedown', function(e) {
-    var mouse = new THREE.Vector3( e.clientX/window.innerWidth * 2 - 1,
-                                   -e.clientY/window.innerHeight * 2 + 1,
-                                   0.5);
-
+    var mouse = self.localizeMouse(e);
     var intersects = self.camera
         .rayCast(self.scene.children, mouse)
         .filter(function(t) {
@@ -179,10 +181,7 @@ SystemBrowser.prototype.bindEvents = function() {
     if ((moveCount = moveCount++ % 5))
       return;
 
-    var mouse = new THREE.Vector3( e.clientX/window.innerWidth * 2 - 1,
-                                  -e.clientY/window.innerHeight * 2 + 1,
-                                   0.5);
-
+    var mouse = self.localizeMouse(e);
     var intersects = self.camera
         .rayCast(self.scene.children, mouse)
         .filter(function(t) {
@@ -211,10 +210,9 @@ SystemBrowser.prototype.bindEvents = function() {
   });
 
   window.addEventListener('resize', function() {
-    self.camera.aspect = window.innerWidth / window.innerHeight;
+    self.camera.aspect = self.canvas.clientWidth / self.canvas.clientHeight;
     self.camera.updateProjectionMatrix();
-    self.renderer.setSize( window.innerWidth, window.innerHeight );
-    self.render();
+    self.renderer.setSize(self.canvas.clientWidth, self.canvas.clientHeight);
   }, false);
 };
 
@@ -330,6 +328,16 @@ SystemBrowser.prototype.stopAnimation = function() {
   cancelAnimationFrame(this.animationFrameRequest);
 };
 
+SystemBrowser.prototype.localizeMouse = function(e) {
+  var parentOff = $(this.canvas).offset();
+  var x = e.pageX - parentOff.left;
+  var y = e.pageY - parentOff.top;
+  var mouse = new THREE.Vector3( x / this.canvas.clientWidth * 2 - 1,
+                                -(y / this.canvas.clientHeight * 2 - 1),
+                                 0.5);
+  return mouse;
+};
+
 SystemBrowser.prototype.debugPosition = function(pos, color) {
   var geom = new THREE.Geometry();
   geom.vertices.push(pos);
@@ -424,12 +432,8 @@ SystemBrowser.prototype.debugRayCast = function() {
 
 SystemBrowser.prototype.visualizeRayCast =  function(e) {
   var camera = this.camera;
-  var mouse = new THREE.Vector3()
+  var mouse = this.localizeMouse(e);
   var raycaster = new THREE.Raycaster();
-
-  mouse.set( e.clientX/window.innerWidth * 2 - 1,
-             -e.clientY/window.innerHeight * 2 + 1,
-             0.5);
 
   // Can't use real camera matrices since we need 64 bit precision
   var f64CamWorld = new THREE.Matrix4();

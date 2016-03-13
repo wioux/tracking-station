@@ -1,9 +1,9 @@
 
-Loader = function(options) {
+AppLoader = function(options) {
   this.options = options || {};
 };
 
-Loader.prototype.loadBodies = function(callback) {
+AppLoader.prototype.loadBodies = function(callback) {
   var self = this, bodies = [];
   $.get('bodies.json', function(resp) {
     resp.forEach(function(body) {
@@ -18,7 +18,7 @@ Loader.prototype.loadBodies = function(callback) {
 
 // Private
 
-Loader.prototype.createBodyFromJson = function(json) {
+AppLoader.prototype.createBodyFromJson = function(json) {
   var body = new Body(json.name);
 
   body.id = json.id;

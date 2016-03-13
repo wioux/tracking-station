@@ -5,7 +5,7 @@
 //= require_tree ./application
 
 $(document).ready(function() {
-  new Loader({ textures: 'textures/' })
+  new AppLoader({ textures: 'textures/' })
     .loadBodies(function(bodies) {
       var jd = Earth.ephemerides[0].jd;
       var container = document.getElementById('ui');

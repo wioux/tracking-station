@@ -2,6 +2,9 @@ Orbit = function() {
   this.body = null;
   this.C = new THREE.Vector3();
   this.satellitePosition = new THREE.Vector3();
+  this.oa = new THREE.Vector3();
+  this.mja = new THREE.Vector3();
+  this.mna = new THREE.Vector3();
 };
 
 Orbit.KM_PER_AU = 1.496e8;
@@ -113,13 +116,17 @@ Orbit.prototype.updateObject3d = function(ctx) {
 // Private
 
 Orbit.prototype.calculateAxisVectors = function() {
-  var an = Ecliptic.equinox().applyAxisAngle(Ecliptic.NORTH, Math.PI*this.om/180.0);
-  this.oa = Ecliptic.pole().applyAxisAngle(an, Math.PI*this.inc/180.0);
+  var an = new THREE.Vector3();
+  return function() {
+    an.copy(Ecliptic.EQUINOX).applyAxisAngle(Ecliptic.NORTH, Math.PI*this.om/180.0);
 
-  this.mja = an.clone().applyAxisAngle(this.oa, Math.PI*this.w/180.0).normalize();
+    this.oa.copy(Ecliptic.NORTH).applyAxisAngle(an, Math.PI*this.inc/180.0);
 
-  this.mna = this.mja.clone().applyAxisAngle(this.oa, Math.PI/2).normalize();
-};
+    this.mja.copy(an).applyAxisAngle(this.oa, Math.PI*this.w/180.0).normalize();
+
+    this.mna.copy(this.mja).applyAxisAngle(this.oa, Math.PI/2).normalize();
+  };
+}();
 
 Orbit.prototype.createObject3d = function(ctx, color) {
   this.object3d = new THREE.Line();

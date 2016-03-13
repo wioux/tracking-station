@@ -127,7 +127,7 @@ SystemPanel.prototype.bindEvents = function() {
       li = li.parentNode;
 
     var id = $(li).find('input[type=checkbox]').attr('name');
-    var body = system.bodies[parseInt(id)];
+    var body = system.bodies[id] || system.bodies[parseInt(id)];
     system.setFocus(body);
   });
 

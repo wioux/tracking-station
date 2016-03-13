@@ -1,6 +1,6 @@
 
-Body = function(name) {
-  this.id = 0;
+Body = function(name, attrs) {
+  this.id = name;
   this.name = name;
   this.color = 'gray';
 
@@ -14,6 +14,9 @@ Body = function(name) {
   this.satellites = [];
 
   this.flags = 0x00;
+
+  for (var key in attrs)
+    this[key] = attrs[key];
 };
 
 Body.HIDDEN    = 0x01;
@@ -183,6 +186,10 @@ Body.prototype.createBodyObject = function(ctx) {
     }
   } else {
     props.color = this.color;
+    if (this.sun) {
+      props.emissive = this.color;
+      props.emissiveIntensity = 1.0;
+    }
   }
   this.object3d.body.material = new THREE.MeshLambertMaterial(props);
 
