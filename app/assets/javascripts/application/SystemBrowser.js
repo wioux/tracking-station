@@ -23,7 +23,6 @@ SystemBrowser = function(ui, bodies, root, jd) {
   };
 
   this.initializeUi(ui, root);
-  this.ui.system.setJulianDay(jd);
 
   this.update(jd);
   this.setFocus(root);
@@ -182,10 +181,8 @@ SystemBrowser.prototype.bindEvents = function() {
           return t.object.userData.body;
         });
 
-    if (intersects.length) {
+    if (intersects.length)
       self.setFocus(intersects[0].object.userData.body);
-      self.render();
-    }
   });
 
   var moveCount = 0;
