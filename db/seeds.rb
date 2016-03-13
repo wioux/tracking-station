@@ -66,7 +66,6 @@ bodies['Pluto'].update_column(:parent_id, bodies['Sun'].id)
 bodies['Charon'].update_column(:parent_id, bodies['Pluto'].id)
 bodies['Ceres'].update_column(:parent_id, bodies['Sun'].id)
 bodies['Eris'].update_column(:parent_id, bodies['Sun'].id)
-bodies['Juno'].update_column(:parent_id, bodies['Sun'].id)
 
 bodies['Sun']      .update_column(:horizons_id, '@Sun'   )
 bodies['Mercury']  .update_column(:horizons_id, '199'   )
