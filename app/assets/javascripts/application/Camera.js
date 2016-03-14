@@ -19,18 +19,18 @@ Camera = function(system) {
 Camera.prototype = Object.create(THREE.PerspectiveCamera.prototype);
 Camera.prototype.constructor = Camera;
 
-Camera.prototype.setTarget = function(object3d) {
+Camera.prototype.setTarget = function(body) {
   var r;
-  if (object3d.geometry.boundingSphere) {
-    r = object3d.geometry.boundingSphere.radius;
+  if (body.object3d.body.geometry.boundingSphere) {
+    r = body.object3d.body.geometry.boundingSphere.radius;
   } else {
-    object3d.geometry.computeBoundingSphere();
-    r = object3d.geometry.boundingSphere.radius;
-    object3d.geometry.boundingSphere = null;
+    body.object3d.body.geometry.computeBoundingSphere();
+    r = body.object3d.body.geometry.boundingSphere.radius;
+    body.object3d.body.geometry.boundingSphere = null;
   }
 
   this.controls.minDistance = 1.6 * r;
-  this.controls.target = object3d.position;
+  this.controls.target = body.object3d.position;
 }
 
 if (!Float64Array.from) {

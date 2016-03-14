@@ -61,7 +61,7 @@ SystemBrowser.prototype.update = function(jd) {
 
 SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
-  this.camera.setTarget(body.object3d.body);
+  this.camera.setTarget(body);
   this.pan(body.object3d.position, function() { this.centerCoordinates() });
   this.dispatchEvent({ type: 'focus', body: body });
 };
