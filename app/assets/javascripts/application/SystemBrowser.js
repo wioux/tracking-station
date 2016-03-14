@@ -1,10 +1,3 @@
-if (!Float64Array.from)
-  Float64Array.from = function(array) {
-    var result = new Float64Array(array.length);
-    for (var i=0; i < array.length; ++i)
-      result[i] = array[i];
-    return result;
-  };
 
 SystemBrowser = function(ui, bodies, root, jd) {
   this.bodies = {};
@@ -76,8 +69,7 @@ SystemBrowser.prototype.update = function(jd) {
 
 SystemBrowser.prototype.setFocus = function(body) {
   this.focus = body;
-  this.camera.controls.target = body.object3d.position;
-  this.camera.controls.minDistance = 2*body.bodyRadius(this);
+  this.camera.setTarget(body.object3d.body);
   this.pan(body.object3d.position, function() { this.centerCoordinates() });
   this.dispatchEvent({ type: 'focus', body: body });
 };
@@ -129,14 +121,6 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   scene.up.set(0, 0, 1);
   this.scene = scene;
 
-  var camera = new THREE.PerspectiveCamera(
-    70 /* fov */,
-    canvas.clientWidth / canvas.clientHeight /* ar */,
-    this.auToPx/1000000 /* near clip */, 100*this.auToPx /* far clip */
-  );
-  this.camera = camera;
-  this.setInitialCameraPosition();
-
   var renderer = new THREE.WebGLRenderer({ antialias: true });
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
   renderer.shadowMap.enabled = true,
@@ -144,10 +128,12 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   canvas.appendChild(renderer.domElement);
   this.renderer = renderer;
 
-  // Tuck controls under this.camera
-  camera.controls = new THREE.OrbitControls(camera, renderer.domElement);
-  camera.controls.enablePan = false;
-  camera.controls.zoomSpeed = 2.0;
+  var camera = new Camera(this);
+  this.camera = camera;
+
+  // This is magical but works pretty well
+  this.camera.position.z = Math.pow(150 * this.root.bodyRadius(this), 1.19);
+  this.focusPosition = new THREE.Vector3(0, 0, 0);
 
   var light = new THREE.AmbientLight(0x1a1a1a);
   scene.add(light);
@@ -159,12 +145,7 @@ SystemBrowser.prototype.bindEvents = function() {
 
   this.canvas.addEventListener('mousedown', function(e) {
     var mouse = self.localizeMouse(e);
-    var intersects = self.camera
-        .rayCast(self.scene.children, mouse)
-        .filter(function(t) {
-          return t.object.userData.body;
-        });
-
+    var intersects = self.camera.rayCast(self.scene.children, mouse);
     if (intersects.length)
       self.setFocus(intersects[0].object.userData.body);
   });
@@ -179,12 +160,7 @@ SystemBrowser.prototype.bindEvents = function() {
     changed && self.dispatchEvent({ type: 'unhighlight' });
 
     var mouse = self.localizeMouse(e);
-    var intersects = self.camera
-        .rayCast(self.scene.children, mouse)
-        .filter(function(t) {
-          return t.object.userData.body;
-        });
-
+    var intersects = self.camera.rayCast(self.scene.children, mouse);
     if (intersects.length) {
       var body = intersects[0].object.userData.body;
       var pos = body.object3d.position.clone().project(sys.camera);
@@ -288,15 +264,6 @@ SystemBrowser.prototype.applyVisibilityFlags = function() {
       this.setIndicatorOpacity(0.5);
     }
   });
-};
-
-SystemBrowser.prototype.setInitialCameraPosition = function() {
-  // This is magical but works pretty well
-  var r = Math.pow(150 * this.root.bodyRadius(this), 1.19);
-
-  this.camera.up.set(0, 0, 1);
-  this.camera.position.z = r;
-  this.focusPosition = new THREE.Vector3(0, 0, 0);
 };
 
 SystemBrowser.prototype.loadTexture = function(path) {
@@ -455,47 +422,6 @@ SystemBrowser.prototype.visualizeRayCast =  function(e) {
   var pos = this.camera.position.clone();
   pos.add(raycaster.ray.direction.clone().setLength(this.auToPx/10));
 
-  var intersects = this.camera
-      .rayCast(this.scene.children, mouse)
-      .filter(function(t) {
-        return t.object.userData.body;
-      });
-
+  var intersects = this.camera.rayCast(this.scene.children, mouse);
   this.debugPosition(pos, intersects.length ? 0x00ff00 : 0xff0000);
 };
-
-THREE.PerspectiveCamera.prototype.rayCast = function() {
-  var raycaster = new THREE.Raycaster();
-  var f64CamWorld = new THREE.Matrix4();
-  var f64CamProjection = new THREE.Matrix4();
-  var f64Proj = new THREE.Matrix4();
-  f64CamWorld.elements = Float64Array.from(f64CamWorld.elements);
-  f64CamProjection.elements = Float64Array.from(f64CamProjection.elements);
-  f64Proj.elements = Float64Array.from(f64Proj.elements);
-
-  return function(objects, mouse) {
-    for (var i=0; i < 16; ++i) {
-      f64CamWorld.elements[i] = this.matrixWorld.elements[i];
-      f64CamProjection.elements[i] = this.projectionMatrix.elements[i];
-    }
-
-    f64Proj.identity()
-      .multiplyMatrices(f64CamWorld, f64Proj.getInverse(f64CamProjection));
-
-    raycaster.ray.origin
-      .setFromMatrixPosition(f64CamWorld);
-
-    raycaster.ray.direction
-      .set(mouse.x, mouse.y, 0.5)
-      .applyProjection(f64Proj)
-      .sub(raycaster.ray.origin).normalize();
-
-    var intersects = raycaster
-        .intersectObjects(objects, true)
-        .filter(function(intersect) {
-          return intersect.object.visible;
-        });
-
-    return intersects;
-  }
-}();
