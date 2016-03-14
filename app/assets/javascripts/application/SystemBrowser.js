@@ -18,12 +18,7 @@ SystemBrowser = function(ui, bodies, root, jd) {
 
   this.clock = new Clock();
 
-  this.auToPx = 1e3;
   this.createWebGLComponents(ui);
-
-  var context = this;
-  this.eachBody(function() { this.createObject3d(context) });
-
   this.bindEvents();
 };
 
@@ -110,6 +105,8 @@ SystemBrowser.prototype.createMilkyWay = function(texture) {
 // private methods
 
 SystemBrowser.prototype.createWebGLComponents = function(ui) {
+  this.auToPx = 1e3;
+
   var canvas  = _('div', {
     'parent': ui,
     'class': 'canvas',
@@ -129,15 +126,17 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   this.renderer = renderer;
 
   var camera = new Camera(this);
-  this.camera = camera;
-
   // This is magical but works pretty well
-  this.camera.position.z = Math.pow(150 * this.root.bodyRadius(this), 1.19);
+  camera.position.z = Math.pow(150 * this.root.bodyRadius(this), 1.19);
   this.focusPosition = new THREE.Vector3(0, 0, 0);
+  this.camera = camera;
 
   var light = new THREE.AmbientLight(0x1a1a1a);
   scene.add(light);
   this.light = light;
+
+  var context = this;
+  this.eachBody(function() { this.createObject3d(context) });
 };
 
 SystemBrowser.prototype.bindEvents = function() {
