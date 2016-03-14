@@ -4,12 +4,9 @@ Clock = function() {
   this.warp = 1;
   this.updateInterval = 16;
   this.resetAfter = this.resetBefore = null;
-  this.listeners = { 'warp': [] };
 };
 
-Clock.prototype.addEventListener = function(type, callback) {
-  this.listeners[type].push(callback);
-};
+Events(Clock.prototype, 'warp');
 
 Clock.prototype.start = function(jd) {
   this.jd = jd;
@@ -49,9 +46,4 @@ Clock.prototype.update = function() {
     this.setWarp(this.warp);
   else if (this.resetBefore !== null && this.jd <= this.resetBefore)
     this.setWarp(this.warp);
-};
-
-Clock.prototype.dispatchEvent = function(e) {
-  for (var i=0; i < this.listeners[e.type].length; ++i)
-    this.listeners[e.type][i](e);
 };

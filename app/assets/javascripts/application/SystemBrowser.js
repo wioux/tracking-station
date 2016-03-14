@@ -8,19 +8,20 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.focus = root;
   this.rootPosition = new THREE.Vector3();
 
-  this.listeners = {
-    'update': [],
-    'highlight': [],
-    'unhighlight': [],
-    'focus': [],
-    'mousemove': []
-  };
-
   this.clock = new Clock();
 
   this.createWebGLComponents(ui);
   this.bindEvents();
 };
+
+Events(
+  SystemBrowser.prototype,
+  'update',
+  'highlight',
+  'unhighlight',
+  'focus',
+  'mousemove'
+);
 
 SystemBrowser.prototype.start = function(jd) {
   this.update(jd);
@@ -28,10 +29,6 @@ SystemBrowser.prototype.start = function(jd) {
 
   this.clock.setWarp(17).start(jd);
   this.animate();
-};
-
-SystemBrowser.prototype.addEventListener = function(type, callback) {
-  this.listeners[type].push(callback);
 };
 
 SystemBrowser.prototype.eachBody = function(action) {
@@ -284,11 +281,6 @@ SystemBrowser.prototype.animate = function() {
 
 SystemBrowser.prototype.stopAnimation = function() {
   cancelAnimationFrame(this.animationFrameRequest);
-};
-
-SystemBrowser.prototype.dispatchEvent = function(e) {
-  for (var i=0; i < this.listeners[e.type].length; ++i)
-    this.listeners[e.type][i](e);
 };
 
 SystemBrowser.prototype.localizeMouse = function(e) {

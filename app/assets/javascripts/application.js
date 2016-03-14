@@ -2,6 +2,7 @@
 //= require three
 //= require OrbitControls
 //= require domhelpers
+//= require Events
 //= require_tree ./application
 
 $(document).ready(function() {
