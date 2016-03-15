@@ -1,9 +1,9 @@
 //= require jquery
 //= require three
 //= require OrbitControls
-//= require domhelpers
-//= require Events
 //= require_tree ./application
+//= require_tree ./3d
+//= require_tree ./Ui
 
 $(document).ready(function() {
   $('.tracking-station').each(function() {

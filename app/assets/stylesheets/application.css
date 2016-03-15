@@ -99,7 +99,7 @@ html, body {
     background-color: #22262c; /* bottom */
 }
 
-.tracking-station .info-panel {
+.tracking-station .panels .panel {
     position: absolute;
     top: 150px;
     right: 40px;
@@ -112,8 +112,7 @@ html, body {
     border: 1px solid #777;
 }
 
-
-.tracking-station .info-panel h2 {
+.tracking-station .panels .panel h2 {
     margin-top: 0px;
     margin-bottom: 0px;
     padding: 4px;
@@ -123,7 +122,7 @@ html, body {
     color: #fff;
 }
 
-.tracking-station .info-panel h3 {
+.tracking-station .panels .panel h3 {
     margin-top: 0px;
     margin-bottom: 0px;
     padding: 4px;
@@ -133,20 +132,41 @@ html, body {
     color: #fff;
 }
 
-.tracking-station .info-panel .description {
+.tracking-station .panels .panel .content {
     padding-top: 8px;
+    padding-bottom: 8px;
     padding-left: 12px;
     padding-right: 12px;
     max-height: 285px;
     overflow-y: auto;
 }
 
-.tracking-station .info-panel .description p:first-child {
+.tracking-station .panels .panel .content p:first-child {
     margin-top: 0px;
 }
 
-.tracking-station .info-panel .description p a {
+.tracking-station .panels .panel a {
     color: #cfcfcf;
+}
+
+.tracking-station .panels .panel .content ul.timeline-events {
+    list-style-type: none;
+    padding: 0px;
+}
+
+.tracking-station .panels .panel .content ul.timeline-events .date {
+    display: block;
+    font-weight: bold;
+}
+
+.tracking-station .panels .panel .content ul.timeline-events li:not(:first-child) {
+    margin-top: 4px;
+}
+
+.tracking-station .panels .panel .content ul.timeline-events .description {
+    display: block;
+    margin-left: 10px;
+    white-space: nowrap;
 }
 
 .tracking-station .body-tooltip {

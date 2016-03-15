@@ -26,7 +26,7 @@ Clock.prototype.setWarp = function(n) {
 
 Clock.prototype.warpTo = function(t1) {
   this.dt = (t1 - this.jd) / (2000 / this.updateInterval);
-  this.ui.text('(auto)');
+  this.dispatchEvent({ type: 'warp', warp: '(auto)' });
 
   if (t1 < this.jd) {
     this.resetBefore = t1;

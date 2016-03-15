@@ -25,8 +25,10 @@ AppLoader.prototype.createBodyFromJson = function(json) {
   body.spacecraft = (json.classification == 'Spacecraft');
   body.sun = (json.classification == 'Star');
   body.major = json.classification.match(/Planet/);
+  body.classification = json.classification;
 
   body.info = json.marked_up_info;
+  body.timeline = json.timeline_events;
 
   body.radiusKm = json.radius_km || 0.001;
 

@@ -46,8 +46,8 @@ SystemBrowser.prototype.update = function(jd) {
     if (body.selectEphemeris(jd)) {
       this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
       body.flags &= ~Body.INVALID;
-    } else if (body.orbit.body) {
-      body.orbit.body.removeSatellite(body);
+    } else {
+      body.orbit.body && body.orbit.body.removeSatellite(body);
       body.flags |= Body.INVALID;
     }
   }
