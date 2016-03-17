@@ -19,7 +19,12 @@ $(document).ready(function() {
         window.sys = new SystemBrowser(container, bodies, root);
         window.sys.createMilkyWay('/textures/ESO_-_Milky_Way-Cropped.jpg');
 
-        window.ui = new SystemPanel(sys, container);
+        var sidebar = $(_('div', { parent: container, class: 'sidebar' }));
+        new StatePanel(sys, sidebar);
+        new BodyListPanel(sys, sidebar);
+
+        new InfoPanels(sys, container);
+        new BodyTooltip(sys, container);
         new EventPopups(sys, container);
 
         if (!root.sun)
