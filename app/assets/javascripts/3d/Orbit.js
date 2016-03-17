@@ -1,10 +1,13 @@
-Orbit = function() {
+Orbit = function(satellite) {
   this.body = null;
+  this.satellite = satellite;
   this.C = new THREE.Vector3();
   this.satellitePosition = new THREE.Vector3();
   this.oa = new THREE.Vector3();
   this.mja = new THREE.Vector3();
   this.mna = new THREE.Vector3();
+
+
 };
 
 Orbit.KM_PER_AU = 1.496e8;

@@ -5,7 +5,7 @@ Body = function(name, attrs) {
   this.color = 'gray';
 
   this.ephemerides = [];
-  this.orbit = new Orbit();
+  this.orbit = new Orbit(this);
 
   this.radiusKm = 0.002;
   this.spacecraft = false;
