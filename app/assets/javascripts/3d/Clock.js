@@ -19,8 +19,9 @@ Clock.prototype.start = function(jd) {
 };
 
 Clock.prototype.setWarp = function(n) {
-  this.warp = n = Math.max(0, n);
-  this.dt = Math.pow(2, n) / (24*60*60*1000 / this.updateInterval);
+  this.warp = n;
+  this.dt = Math.sign(n);
+  this.dt *= Math.pow(2, Math.abs(n)) / (24*60*60*1000 / this.updateInterval);
   this.resetAfter = this.resetBefore = null;
   this.dispatchEvent({ type: 'warp', warp: n });
   return this;
