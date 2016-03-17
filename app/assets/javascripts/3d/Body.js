@@ -29,19 +29,21 @@ Body.prototype.addEphemerides = function(list) {
 };
 
 Body.prototype.selectEphemeris = function(jd) {
-  var eph = null;
-  for (var i=0; i < this.ephemerides.length; ++i) {
-    if (this.ephemerides[i].jd > jd)
-      break;
-    eph = this.ephemerides[i];
+  var mid, low = 0, high = this.ephemerides.length;
+  while (low != high) {
+    mid = Math.floor((low + high) / 2);
+    if (this.ephemerides[mid].jd <= jd)
+      low = mid + 1;
+    else
+      high = mid;
   }
 
-  if (eph) {
-    this.orbit.load(eph);
+  if (low > 0) {
+    this.orbit.load(this.ephemerides[low-1]);
     this.orbit.update(jd);
   }
 
-  return eph;
+  return low > 0 && this.ephemerides[low-1];
 };
 
 Body.prototype.addSatellite = function(satellite) {
