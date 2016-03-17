@@ -8,7 +8,7 @@ AppLoader.prototype.loadBodies = function(href, callback) {
   $.get(href, function(resp) {
     resp.forEach(function(body) {
       var object = self.createBodyFromJson(body);
-      window[body.name] = object;
+      window[body.name.replace(/ /g, '_')] = object;
       bodies.push(object);
     });
 
