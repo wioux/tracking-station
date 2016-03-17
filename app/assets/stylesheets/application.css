@@ -177,6 +177,13 @@ html, body {
     z-index: 99;
 }
 
+.tracking-station .event-popup {
+    position: absolute;
+    background-color: rgba(75, 75, 75, 0.3);
+    color: #cfcfcf;
+    border-radius: 4px;
+}
+
 #ui {
     width: 100%;
     height: 100%;

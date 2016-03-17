@@ -16,6 +16,7 @@ Events = function(proto) {
 
   proto.addEventListener = function(type, callback) {
     this.getEventListeners(type).push(callback);
+    return callback;
   };
 
   proto.removeEventListener = function(type, callback) {

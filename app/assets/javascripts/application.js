@@ -20,6 +20,7 @@ $(document).ready(function() {
         window.sys.createMilkyWay('/textures/ESO_-_Milky_Way-Cropped.jpg');
 
         window.ui = new SystemPanel(sys, container);
+        new EventPopups(sys, container);
 
         if (!root.sun)
           sys.setAmbientLight(0xffffff);

@@ -99,6 +99,13 @@ SystemBrowser.prototype.createMilkyWay = function(texture) {
 };
 
 
+SystemBrowser.prototype.project = function(position) {
+  var pos = position.clone().project(this.camera);
+  return pos.set(this.canvas.clientWidth * (1 + pos.x) / 2,
+                 this.canvas.clientHeight * (1 - pos.y) / 2 + 20,
+                 0);
+};
+
 // private methods
 
 SystemBrowser.prototype.createWebGLComponents = function(ui) {
@@ -159,11 +166,11 @@ SystemBrowser.prototype.bindEvents = function() {
     var intersects = self.camera.rayCast(self.scene.children, mouse);
     if (intersects.length) {
       var body = intersects[0].object.userData.body;
-      var pos = body.object3d.position.clone().project(sys.camera);
+      var pos = self.project(body.object3d.position);
       self.dispatchEvent({ type: 'highlight',
                            body: body,
-                           layerX: self.canvas.clientWidth * (1 + pos.x) / 2,
-                           layerY: self.canvas.clientHeight * (1 - pos.y) / 2 + 20
+                           layerX: pos.x,
+                           layerY: pos.y
                          });
       body.highlight();
     }
