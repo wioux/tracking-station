@@ -37,20 +37,20 @@ SystemBrowser.prototype.eachBody = function(action) {
 };
 
 SystemBrowser.prototype.update = function(jd) {
-  for (var bodyId in this.bodies) {
-    var body = this.bodies[bodyId];
-
+  var bodies = this.bodies;
+  this.eachBody(function(body) {
     if (body == this.root)
-      continue;
+      return;
 
-    if (body.selectEphemeris(jd)) {
-      this.bodies[body.orbit.ephemeris.central_body_id].addSatellite(body);
+    var eph;
+    if ((eph = body.selectEphemeris(jd))) {
+      bodies[eph.central_body_id].addSatellite(body);
       body.flags &= ~Body.INVALID;
     } else {
       body.orbit.body && body.orbit.body.removeSatellite(body);
       body.flags |= Body.INVALID;
     }
-  }
+  });
 
   this.root.updateObject3d(this, this.rootPosition);
 

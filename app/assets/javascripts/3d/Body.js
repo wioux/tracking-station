@@ -47,7 +47,7 @@ Body.prototype.selectEphemeris = function(jd) {
 };
 
 Body.prototype.addSatellite = function(satellite) {
-  if (this.satellites.indexOf(satellite) != -1)
+  if (satellite.orbit.body == this)
     return;
 
   if (satellite.orbit.body)

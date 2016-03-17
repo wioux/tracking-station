@@ -22,8 +22,12 @@ StatePanel = function(system, parent) {
     warp: $(state).find('[data-state=warp]')
   };
 
+  var lastJd;
   system.addEventListener('update', function(e) {
-    ui.date.text(JulianDay.toString(e.jd));
+    var jd = Math.floor(e.jd);
+    if (jd != lastJd)
+      ui.date.text(JulianDay.toString(jd));
+    lastJd = jd;
   });
 
   system.addEventListener('focus', function(e) {
