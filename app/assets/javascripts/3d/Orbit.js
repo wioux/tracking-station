@@ -30,10 +30,10 @@ Orbit.prototype.load = function(ephemeris) {
   // Periapsis distance (au)
   this.qr = parseFloat(ephemeris.qr);
 
-  // Julian day
+  // Julian day (epoch)
   this.jd = parseFloat(ephemeris.jd);
 
-  // True anomaly (DEG) at epoch
+  // True anomaly (DEG) (realtime)
   this.ta = parseFloat(ephemeris.ta);
 
   // Apoapsis distance (au)
@@ -78,10 +78,7 @@ Orbit.prototype.update = function(jd) {
   while (newTA < 0)
     newTA += 360;
 
-  this.ea = newEA; // save, for debugging
-  this.ma = newMA;
   this.ta = newTA;
-  this.jd = jd;
 };
 
 Orbit.prototype.updateObject3d = function(ctx) {
