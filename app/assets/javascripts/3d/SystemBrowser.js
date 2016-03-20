@@ -280,10 +280,16 @@ SystemBrowser.prototype.loadTexture = function(path) {
 
 SystemBrowser.prototype.animate = function() {
   var sys = this;
-  this.animator = this.animator || function() { sys.animate() };
+  this.animator = this.animator || function() {
+    var skip = 0;
+    return function() {
+      skip = (skip + 1) % 3;
+      skip || sys.update(sys.clock.jd);
+      sys.animate()
+    };
+  }();
 
   this.animationFrameRequest = requestAnimationFrame(this.animator);
-  this.update(this.clock.jd);
 };
 
 SystemBrowser.prototype.stopAnimation = function() {
