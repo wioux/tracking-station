@@ -15,7 +15,6 @@ html, body {
     position: relative;
     width: 700px;
     height: 500px;
-    white-space: pre;
     font-family: Monaco, monospace;
     font-size: 9pt;
 }
@@ -32,6 +31,7 @@ html, body {
     border-right: 1px solid #2c3139;
     padding-left: 12px;
     padding-right: 12px;
+    white-space: pre;
 }
 
 .tracking-station .sidebar .state {
@@ -103,7 +103,6 @@ html, body {
     position: absolute;
     top: 150px;
     right: 40px;
-    white-space: normal;
     text-align: justify;
     width: 300px;
     background-color: #1b1d1f;
@@ -182,6 +181,10 @@ html, body {
     background-color: rgba(75, 75, 75, 0.3);
     color: #cfcfcf;
     border-radius: 4px;
+}
+
+.tracking-station .event-popup header {
+    text-align: center;
 }
 
 #ui {
