@@ -28,7 +28,7 @@ Body.prototype.addEphemerides = function(list) {
     this.ephemerides.push(list[i]);
 };
 
-Body.prototype.selectEphemeris = function(jd) {
+Body.prototype.selectEphemeris = function(sys, jd) {
   var mid, low = 0, high = this.ephemerides.length;
   while (low != high) {
     mid = Math.floor((low + high) / 2);
@@ -39,7 +39,7 @@ Body.prototype.selectEphemeris = function(jd) {
   }
 
   if (low > 0) {
-    this.orbit.load(this.ephemerides[low-1]);
+    this.orbit.load(sys, this.ephemerides[low-1]);
     this.orbit.update(jd);
   }
 
@@ -262,7 +262,7 @@ Body.prototype.scaleIndicator = function(ctx, pos, arc) {
   if (this.orbit.body) {
     camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / ctx.auToPx;
 
-    if (Math.atan(this.orbit.a / camDistanceAu) < 0.035)
+    if (Math.atan(Math.abs(this.orbit.a) / camDistanceAu) < 0.035)
       this.flags |= Body.FADED;
     else
       this.flags &= ~Body.FADED;

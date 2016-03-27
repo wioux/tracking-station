@@ -37,13 +37,13 @@ SystemBrowser.prototype.eachBody = function(action) {
 };
 
 SystemBrowser.prototype.update = function(jd) {
-  var bodies = this.bodies;
+  var sys = this, bodies = this.bodies;
   this.eachBody(function(body) {
     if (body == this.root)
       return;
 
     var eph;
-    if ((eph = body.selectEphemeris(jd))) {
+    if ((eph = body.selectEphemeris(sys, jd))) {
       bodies[eph.central_body_id].addSatellite(body);
       body.flags &= ~Body.INVALID;
     } else {
