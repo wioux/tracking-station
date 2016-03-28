@@ -23,8 +23,8 @@ PlanetaryRing.prototype.createObject3d = function(ctx, body) {
   this.object3d.up.set(0, 0, 1);
 
   this.object3d.geometry =
-    new THREE.SweptRingGeometry(ctx.auToPx*this.innerRadiusKm/Orbit.KM_PER_AU,
-                                ctx.auToPx*this.outerRadiusKm/Orbit.KM_PER_AU,
+    new THREE.SweptRingGeometry(SystemBrowser.SCALE*this.innerRadiusKm/Orbit.KM_PER_AU,
+                                SystemBrowser.SCALE*this.outerRadiusKm/Orbit.KM_PER_AU,
                                 30, 30);
   this.object3d.material = new THREE.MeshPhongMaterial({
     map: ctx.loadTexture(this.texture),
@@ -44,11 +44,11 @@ PlanetaryRing.prototype.createObject3d = function(ctx, body) {
   this.spotlight = new THREE.SpotLight(0xffffff);
   this.spotlight.castShadow = true;
   this.spotlight.angle = Math.PI / 30;
-  this.spotlight.shadow.camera.near = body.bodyRadius(ctx);
-  this.spotlight.shadow.camera.far = 30 * body.bodyRadius(ctx);
+  this.spotlight.shadow.camera.near = body.bodyRadius();
+  this.spotlight.shadow.camera.far = 30 * body.bodyRadius();
   this.spotlight.intensity = 0.25;
   this.spotlight.target = body.object3d;
-  this.spotlightDistance = 25 * body.bodyRadius(ctx);
+  this.spotlightDistance = 25 * body.bodyRadius();
 
   body.object3d.body.castShadow = true;
   this.object3d.receiveShadow = true;

@@ -1,14 +1,14 @@
 
 Camera = function(system) {
   var canvas = system.canvas,
-      auToPx = system.auToPx;
+      scale = SystemBrowser.SCALE;
 
   THREE.PerspectiveCamera.call(this, 70, // fov
                                canvas.clientWidth / canvas.clientHeight, // ar
-                               auToPx/1000000, 100 * auToPx); // near, far clip
+                               scale/1000000, 100 * scale); // near, far clip
 
   this.up.set(0, 0, 1);
-  this.position.z = auToPx;
+  this.position.z = scale;
 
   // Tuck controls under this.camera
   this.controls = new THREE.OrbitControls(this, system.renderer.domElement);

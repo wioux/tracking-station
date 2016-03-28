@@ -10,7 +10,7 @@ Orbit = function(satellite) {
 
 Orbit.KM_PER_AU = 1.496e8;
 
-Orbit.prototype.load = function(ctx, ephemeris) {
+Orbit.prototype.load = function(ephemeris) {
   if (ephemeris == this.ephemeris)
     return;
 
@@ -55,7 +55,7 @@ Orbit.prototype.load = function(ctx, ephemeris) {
   // Semi-minor axis (au)
   // this.b = parseFloat(ephemeris.b);
 
-  this.calculateAxisVectors(ctx);
+  this.calculateAxisVectors();
 };
 
 // Update mean/true anomaly to Julian Day
@@ -94,22 +94,22 @@ Orbit.prototype.updateObject3d = function(ctx) {
     this.lastPositionedEphemeris = this.ephemeris;
 
     if (this.ec < 1)
-      this.positionEllipticalGeometry(ctx);
+      this.positionEllipticalGeometry();
     else
-      this.positionHyperbolicGeometry(ctx);
+      this.positionHyperbolicGeometry();
   }
 
   if (this.ec < 1)
-    return this.setSatellitePositionOnEllipse(ctx);
+    return this.setSatellitePositionOnEllipse();
   else
-    return this.setSatellitePositionOnHyperbola(ctx);
+    return this.setSatellitePositionOnHyperbola();
 };
 
 // Private
 
 Orbit.prototype.calculateAxisVectors = function() {
   var an = new THREE.Vector3();
-  return function(ctx) {
+  return function() {
     an.copy(Ecliptic.EQUINOX).applyAxisAngle(Ecliptic.NORTH, Math.PI*this.om/180.0);
 
     this.oa.copy(Ecliptic.NORTH).applyAxisAngle(an, Math.PI*this.inc/180.0);
@@ -118,10 +118,11 @@ Orbit.prototype.calculateAxisVectors = function() {
 
     this.mna.copy(this.mja).applyAxisAngle(this.oa, Math.PI/2).normalize();
 
+    var scale = SystemBrowser.SCALE;
     if (this.ec < 1)
-      this.C.copy(this.mja).multiplyScalar(-ctx.auToPx * (this.a - this.qr));
+      this.C.copy(this.mja).multiplyScalar(-scale * (this.a - this.qr));
     else
-      this.C.copy(this.mja).multiplyScalar(ctx.auToPx * (Math.abs(this.a) + this.qr));
+      this.C.copy(this.mja).multiplyScalar(scale * (Math.abs(this.a) + this.qr));
   };
 }();
 
@@ -141,53 +142,55 @@ Orbit.prototype.createObject3d = function(ctx, color) {
   this.body && this.body.object3d.add(this.object3d);
 }
 
-Orbit.prototype.positionEllipticalGeometry = function(ctx) {
+Orbit.prototype.positionEllipticalGeometry = function() {
   var a = this.a,
       b = a * Math.sqrt(1.0 - Math.max(0, this.ec*this.ec)),
       mja = this.mja,
       mna = this.mna,
-      geometry = this.object3d.geometry;
+      geometry = this.object3d.geometry,
+      scale = SystemBrowser.SCALE;
   for (var p, th, i=0; i < geometry.vertices.length; ++i) {
     th = 2 * Math.PI * i / (geometry.vertices.length - 1);
 
     geometry.vertices[i].copy(this.C)
-      .addScaledVector(mja, ctx.auToPx * a * Math.cos(th))
-      .addScaledVector(mna, ctx.auToPx * b * Math.sin(th));
+      .addScaledVector(mja, scale * a * Math.cos(th))
+      .addScaledVector(mna, scale * b * Math.sin(th));
   }
   geometry.verticesNeedUpdate = true;
 };
 
-Orbit.prototype.positionHyperbolicGeometry = function(ctx) {
+Orbit.prototype.positionHyperbolicGeometry = function() {
   var a = this.a,
       c = Math.abs(a) + this.qr,
       b = Math.sqrt(c*c - a*a),
       mja = this.mja,
       mna = this.mna,
-      geometry = this.object3d.geometry;
+      geometry = this.object3d.geometry,
+      scale = SystemBrowser.SCALE;
   for (var p, th, i=0; i < geometry.vertices.length; ++i) {
     th = 2 * Math.PI * i / (geometry.vertices.length - 1) - Math.PI;
 
     geometry.vertices[i].copy(this.C)
-      .addScaledVector(mja, ctx.auToPx * a * Math.cosh(th))
-      .addScaledVector(mna, ctx.auToPx * b * Math.sinh(th));
+      .addScaledVector(mja, scale * a * Math.cosh(th))
+      .addScaledVector(mna, scale * b * Math.sinh(th));
   }
   geometry.verticesNeedUpdate = true;
 };
 
-Orbit.prototype.setSatellitePositionOnEllipse = function(ctx) {
+Orbit.prototype.setSatellitePositionOnEllipse = function() {
   var r = this.a*(1-this.ec*this.ec)/(1+this.ec*Math.cos(Math.PI*this.ta/180.0));
   this.satellitePosition
     .copy(this.mja).applyAxisAngle(this.oa, Math.PI*this.ta / 180.0)
-    .setLength(ctx.auToPx * r)
+    .setLength(SystemBrowser.SCALE * r)
     .add(this.body.object3d.position);
 };
 
-Orbit.prototype.setSatellitePositionOnHyperbola = function(ctx) {
+Orbit.prototype.setSatellitePositionOnHyperbola = function() {
   var r = -this.a*(this.ec*this.ec - 1.0) /
       (1.0 - this.ec*Math.cos(Math.PI*(180 - this.ta) / 180.0));
   this.satellitePosition
     .copy(this.mja).applyAxisAngle(this.oa, Math.PI*this.ta / 180.0)
-    .setLength(ctx.auToPx * r)
+    .setLength(SystemBrowser.SCALE * r)
     .add(this.body.object3d.position);
 };
 

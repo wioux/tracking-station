@@ -23,6 +23,8 @@ Events(
   'mousemove'
 );
 
+SystemBrowser.SCALE = 1000; // 3d coordinates per AU
+
 SystemBrowser.prototype.start = function(jd) {
   this.update(jd);
   this.setFocus(this.root);
@@ -37,13 +39,13 @@ SystemBrowser.prototype.eachBody = function(action) {
 };
 
 SystemBrowser.prototype.update = function(jd) {
-  var sys = this, bodies = this.bodies;
+  var bodies = this.bodies;
   this.eachBody(function(body) {
     if (body == this.root)
       return;
 
     var eph;
-    if ((eph = body.selectEphemeris(sys, jd))) {
+    if ((eph = body.selectEphemeris(jd))) {
       bodies[eph.central_body_id].addSatellite(body);
       body.flags &= ~Body.INVALID;
     } else {
@@ -78,7 +80,7 @@ SystemBrowser.prototype.render = function() {
 SystemBrowser.prototype.createMilkyWay = function(texture) {
   var mesh = new THREE.Mesh();
   mesh.up.set(0, 0, 1);
-  mesh.geometry = new THREE.SphereGeometry(1000000*this.auToPx, 3, 3);
+  mesh.geometry = new THREE.SphereGeometry(1000000*SystemBrowser.SCALE, 3, 3);
   mesh.material = new THREE.MeshLambertMaterial({
     color: 0xffffff,
     side: THREE.BackSide,
@@ -109,8 +111,6 @@ SystemBrowser.prototype.project = function(position) {
 // private methods
 
 SystemBrowser.prototype.createWebGLComponents = function(ui) {
-  this.auToPx = 1e3;
-
   var canvas  = _('div', {
     'parent': ui,
     'class': 'canvas',
@@ -131,7 +131,7 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
 
   var camera = new Camera(this);
   // This is magical but works pretty well
-  camera.position.z = Math.pow(150 * this.root.bodyRadius(this), 1.19);
+  camera.position.z = Math.pow(150 * this.root.bodyRadius(), 1.19);
   this.focusPosition = new THREE.Vector3(0, 0, 0);
   this.camera = camera;
 
@@ -243,7 +243,7 @@ SystemBrowser.prototype.centerCoordinates = function() {
 
 SystemBrowser.prototype.applyVisibilityFlags = function() {
   var body, localSystem = this.focus.localSystem();
-  var focusR = this.focus.scaleIndicator(this, this.camera.position, 2);
+  var focusR = this.focus.scaleIndicator(this.camera.position, 2);
   var fadeOpacity = Math.min(0.5, focusR / 9.0);
   fadeOpacity = (fadeOpacity < 0.025) ? 0 : fadeOpacity;
 
@@ -252,7 +252,7 @@ SystemBrowser.prototype.applyVisibilityFlags = function() {
     if (this.flags & Body.INVALID)
       return this.setVisibility(false);
 
-    this.scaleIndicator(context, context.camera.position, this.highlighted ? 1.0 : 0.7);
+    this.scaleIndicator(context.camera.position, this.highlighted ? 1.0 : 0.7);
     this.setVisibility(!(this.flags & (Body.HIDDEN | Body.FADED)));
 
     if (localSystem.indexOf(this) == -1) {
@@ -381,11 +381,11 @@ SystemBrowser.prototype.debugPlane = function(position, normal, color) {
 
 
 SystemBrowser.prototype.debugEcliptic = function(position, radius) {
-  return this.debugPlane(position, Ecliptic.pole(this.auToPx/1000), 0x0000ff);
+  return this.debugPlane(position, Ecliptic.pole(SystemBrowser.SCALE/1000), 0x0000ff);
 };
 
 SystemBrowser.prototype.debugEquatorial = function(position, radius) {
-  return this.debugPlane(position, Equatorial.pole(this.auToPx/1000), 0xffffff);
+  return this.debugPlane(position, Equatorial.pole(SystemBrowser.SCALE/1000), 0xffffff);
 };
 
 SystemBrowser.prototype.debugRayCast = function() {
@@ -424,7 +424,7 @@ SystemBrowser.prototype.visualizeRayCast =  function(e) {
   // why is camera position initally at Y=-2000?
 
   var pos = this.camera.position.clone();
-  pos.add(raycaster.ray.direction.clone().setLength(this.auToPx/10));
+  pos.add(raycaster.ray.direction.clone().setLength(SystemBrowser.SCALE/10));
 
   var intersects = this.camera.rayCast(this.scene.children, mouse);
   this.debugPosition(pos, intersects.length ? 0x00ff00 : 0xff0000);

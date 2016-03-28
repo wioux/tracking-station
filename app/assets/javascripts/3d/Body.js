@@ -28,7 +28,7 @@ Body.prototype.addEphemerides = function(list) {
     this.ephemerides.push(list[i]);
 };
 
-Body.prototype.selectEphemeris = function(sys, jd) {
+Body.prototype.selectEphemeris = function(jd) {
   var mid, low = 0, high = this.ephemerides.length;
   while (low != high) {
     mid = Math.floor((low + high) / 2);
@@ -39,7 +39,7 @@ Body.prototype.selectEphemeris = function(sys, jd) {
   }
 
   if (low > 0) {
-    this.orbit.load(sys, this.ephemerides[low-1]);
+    this.orbit.load(this.ephemerides[low-1]);
     this.orbit.update(jd);
   }
 
@@ -198,7 +198,7 @@ Body.prototype.createBodyObject = function(ctx) {
   var parts = this.texture ? 50 : 8;
   this.object3d.body.geometry =
     new THREE.BufferGeometry().fromGeometry(
-      new THREE.SphereGeometry(this.bodyRadius(ctx), parts, parts)
+      new THREE.SphereGeometry(this.bodyRadius(), parts, parts)
     );
 
   this.object3d.add(this.object3d.body);
@@ -234,25 +234,25 @@ Body.prototype.createSunLightObject = function(ctx) {
   );
 
   // specific to Sun / /lensflare0_alpha_centered.png
-  var scale = ctx.auToPx/6.7;
+  var scale = SystemBrowser.SCALE / 6.7;
   this.object3d.sunlight.flare.scale.set(scale, scale, scale);
   this.object3d.add(this.object3d.sunlight.flare);
   this.object3d.add(this.object3d.sunlight);
 };
 
-Body.prototype.bodyRadius = function(ctx) {
-  return this.radiusKm / Orbit.KM_PER_AU * ctx.auToPx;
+Body.prototype.bodyRadius = function() {
+  return SystemBrowser.SCALE * this.radiusKm / Orbit.KM_PER_AU;
 };
 
-Body.prototype.shellRadius = function(ctx) {
-//  return Math.tan(2 * Math.PI / 180.0) * ctx.auToPx;
-  return Math.tan(1 * Math.PI / 180.0) * ctx.auToPx;
+Body.prototype.shellRadius = function() {
+  return SystemBrowser.SCALE * Math.tan(1 * Math.PI / 180.0);
 };
 
-Body.prototype.scaleIndicator = function(ctx, pos, arc) {
-  var originalRadius = this.shellRadius(ctx);
-  var camDistanceAu = pos.distanceTo(this.object3d.position) / ctx.auToPx;
-  var newRadius = Math.tan(arc * Math.PI / 180.0) * camDistanceAu * ctx.auToPx;
+Body.prototype.scaleIndicator = function(pos, arc) {
+  var scale = SystemBrowser.SCALE;
+  var originalRadius = this.shellRadius();
+  var camDistanceAu = pos.distanceTo(this.object3d.position) / scale;
+  var newRadius = scale * Math.tan(arc * Math.PI / 180.0) * camDistanceAu;
 
   var m = this.sprite ? 60 : 1;
   this.object3d.indicator.scale.set(m*newRadius/originalRadius,
@@ -260,7 +260,7 @@ Body.prototype.scaleIndicator = function(ctx, pos, arc) {
                                     m*newRadius/originalRadius);
 
   if (this.orbit.body) {
-    camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / ctx.auToPx;
+    camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / scale;
 
     if (Math.atan(Math.abs(this.orbit.a) / camDistanceAu) < 0.035)
       this.flags |= Body.FADED;
@@ -268,7 +268,7 @@ Body.prototype.scaleIndicator = function(ctx, pos, arc) {
       this.flags &= ~Body.FADED;
   }
 
-  return newRadius / this.bodyRadius(ctx);
+  return newRadius / this.bodyRadius();
 };
 
 Body.prototype.setVisibility = function(visibility) {
