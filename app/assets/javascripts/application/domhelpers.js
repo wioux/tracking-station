@@ -7,7 +7,10 @@ window._ = function(tag, attrs, fn) {
     else if (key == 'parent' && !attrs.parent.jquery)
       attrs.parent.appendChild(el);
     else if (key == 'children')
-      attrs[key].forEach(function(child) { el.appendChild(child) });
+      attrs[key].forEach(function(child) {
+        child = typeof child == 'string' ? document.createTextNode(child) : child;
+        el.appendChild(child)
+      });
     else
       el.setAttribute(key, attrs[key]);
   }

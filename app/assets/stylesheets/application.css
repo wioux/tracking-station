@@ -3,7 +3,7 @@
  *= require_self
  */
 
-body {
+html, body {
     margin: 0px;
     padding: 0px;
     width: 100%;
@@ -11,75 +11,77 @@ body {
     overflow: hidden;
 }
 
-#ui {
+.tracking-station {
     position: relative;
-    width: 100%;
-    height: 100%;
-    white-space: pre;
+    width: 700px;
+    height: 500px;
     font-family: Monaco, monospace;
     font-size: 9pt;
 }
 
-#ui .sidebar {
+.tracking-station .sidebar {
     position: absolute;
+    top: 0px;
+    left: 0px;
     display: flex;
     flex-flow: column;
     height: 100%;
-    background-color: #000;
+    background-color: rgba(75, 75, 75, 0.3);
     color: #cfcfcf;
-    border-left: 5px solid #2c3139;
+    border-right: 1px solid #2c3139;
     padding-left: 12px;
     padding-right: 12px;
+    white-space: pre;
 }
 
-#ui .sidebar .state {
+.tracking-station .sidebar .state {
     display: 0 1 auto;
 }
 
-#ui .sidebar .state > div label {
+.tracking-station .sidebar .state > div label {
     display: inline-block;
     width: 75px;
 }
 
-#ui .sidebar .body-list {
+.tracking-station .sidebar .body-list {
     display: 1 1 auto;
     overflow-y: auto;
 }
 
-#ui .sidebar ul {
+.tracking-station .sidebar ul {
     padding-left: 8px;
     list-style-type: none;
 }
 
-#ui .sidebar ul li {
+.tracking-station .sidebar ul li {
     padding-top: 3px;
     padding-bottom: 3px;
 }
 
-#ui .sidebar ul li.focused {
+.tracking-station .sidebar ul li.focused {
     background-color: #222222;
 }
 
-#ui .sidebar ul li.indent-0 strong {
+.tracking-station .sidebar ul li.indent-0 strong {
     padding-left: 8px;      
 }
 
-#ui .sidebar ul li.indent-1 strong {
+.tracking-station .sidebar ul li.indent-1 strong {
     padding-left: 16px;
 }
 
-#ui .sidebar ul li.indent-2 strong {
+.tracking-station .sidebar ul li.indent-2 strong {
     padding-left: 28px;
 }
 
-#ui .buttons {
+.tracking-station .buttons {
     position: absolute;
     top: 150px;
     right: 4px;
     z-index: 99;
 }
 
-#ui .buttons .button {
+.tracking-station .buttons .button {
     padding: 4px;
     cursor: pointer;
     color: #cfcfcf;
@@ -92,16 +94,15 @@ body {
     height: 20px;
 }
 
-#ui .buttons .button.selected {
+.tracking-station .buttons .button.selected {
 //    background-color: #3c4249; /* top */
     background-color: #22262c; /* bottom */
 }
 
-#ui .info-panel {
+.tracking-station .panels .panel {
     position: absolute;
     top: 150px;
     right: 40px;
-    white-space: normal;
     text-align: justify;
     width: 300px;
     background-color: #1b1d1f;
@@ -110,8 +111,7 @@ body {
     border: 1px solid #777;
 }
 
-
-#ui .info-panel h2 {
+.tracking-station .panels .panel h2 {
     margin-top: 0px;
     margin-bottom: 0px;
     padding: 4px;
@@ -121,7 +121,7 @@ body {
     color: #fff;
 }
 
-#ui .info-panel h3 {
+.tracking-station .panels .panel h3 {
     margin-top: 0px;
     margin-bottom: 0px;
     padding: 4px;
@@ -131,26 +131,63 @@ body {
     color: #fff;
 }
 
-#ui .info-panel .description {
+.tracking-station .panels .panel .content {
     padding-top: 8px;
+    padding-bottom: 8px;
     padding-left: 12px;
     padding-right: 12px;
     max-height: 285px;
     overflow-y: auto;
 }
 
-#ui .info-panel .description p:first-child {
+.tracking-station .panels .panel .content p:first-child {
     margin-top: 0px;
 }
 
-#ui .info-panel .description p a {
+.tracking-station .panels .panel a {
     color: #cfcfcf;
 }
 
-#ui .body-tooltip {
+.tracking-station .panels .panel .content ul.timeline-events {
+    list-style-type: none;
+    padding: 0px;
+}
+
+.tracking-station .panels .panel .content ul.timeline-events .date {
+    display: block;
+    font-weight: bold;
+}
+
+.tracking-station .panels .panel .content ul.timeline-events li:not(:first-child) {
+    margin-top: 4px;
+}
+
+.tracking-station .panels .panel .content ul.timeline-events .description {
+    display: block;
+    margin-left: 10px;
+    white-space: nowrap;
+}
+
+.tracking-station .body-tooltip {
     position: absolute;
     color: yellow;
     font-family: monospace;
     font-weight: bold;
     z-index: 99;
+}
+
+.tracking-station .event-popup {
+    position: absolute;
+    background-color: rgba(75, 75, 75, 0.3);
+    color: #cfcfcf;
+    border-radius: 4px;
+}
+
+.tracking-station .event-popup header {
+    text-align: center;
+}
+
+#ui {
+    width: 100%;
+    height: 100%;
 }

@@ -24,27 +24,37 @@ module Horizons
       stop_time = start_time.strftime('%Y-%m-%d') unless stop_time.is_a?(String)
       step = step.inspect[/\d+ \w/] unless step.is_a?(String)
 
-      uri = self.class.batch_url_for(body, center, start_time, stop_time, step)
-      response = Net::HTTP.get_response(uri)
+      response = self.class.get_horizons_response(body, center, start_time, stop_time, step)
 
-      unless response.code == '200'
-        raise Exception("horizons(#{body}, #{center}, " <<
-                        "#{start_time}, #{stop_time}, #{step}) " <<
-                        "responded HTTP #{response.code}")
-      end
-
-      self.class.parse_csv(response.body) do |elements|
+      self.class.parse_csv(response) do |elements|
         yield(elements)
       end
     end
 
     protected
 
-    def self.batch_url_for(body_id, center_id, start_time, stop_time, step)
-      URI("http://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1" <<
-          "&MAKE_EPHEM='YES'&TABLE_TYPE='ELEMENTS'&OUT_UNITS='AU-D'" <<
-          "&COMMAND='#{body_id}'&CENTER='#{center_id}'&CSV_FORMAT='YES'" <<
-          "&START_TIME='#{start_time}'&STOP_TIME='#{stop_time}'&STEP_SIZE='#{step}'")
+    def self.get_horizons_response(body_id, center_id, start_time, stop_time, step)
+      FileUtils.mkdir_p("#{Rails.root}/tmp/horizons")
+      cache = "#{Rails.root}/tmp/horizons/#{center_id}-#{body_id}-#{start_time}-#{stop_time}-#{step}.txt"
+
+      unless File.exist?(cache)
+        uri = URI("http://ssd.jpl.nasa.gov/horizons_batch.cgi?batch=1" <<
+                  "&MAKE_EPHEM='YES'&TABLE_TYPE='ELEMENTS'&OUT_UNITS='AU-D'" <<
+                  "&COMMAND='#{body_id}'&CENTER='#{center_id}'&CSV_FORMAT='YES'" <<
+                  "&START_TIME='#{start_time}'&STOP_TIME='#{stop_time}'&STEP_SIZE='#{step}'")
+
+        response = Net::HTTP.get_response(uri)
+
+        unless response.code == '200'
+          raise Exception("horizons(#{body}, #{center}, " <<
+                          "#{start_time}, #{stop_time}, #{step}) " <<
+                          "responded HTTP #{response.code}")
+        end
+
+        File.open(cache, 'w'){ |f| f.write(response.body) }
+      end
+
+      File.read(cache)
     end
 
     def self.parse_csv(csv)

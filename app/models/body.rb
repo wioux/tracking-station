@@ -3,6 +3,7 @@ class Body < ActiveRecord::Base
 
   belongs_to :parent, class_name: 'Body'
   has_many :ephemerides, foreign_key: :satellite_id
+  has_many :timeline_events
 
   markdown_extensions =
     [

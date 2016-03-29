@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160309195846) do
+ActiveRecord::Schema.define(version: 20160314055912) do
 
   create_table "bodies", force: :cascade do |t|
     t.string   "name",                       null: false
@@ -48,6 +48,12 @@ ActiveRecord::Schema.define(version: 20160309195846) do
     t.decimal "w",               precision: 8, scale: 8, null: false
     t.decimal "pr",              precision: 8, scale: 8, null: false
     t.decimal "tp",              precision: 8, scale: 8, null: false
+  end
+
+  create_table "timeline_events", force: :cascade do |t|
+    t.integer "body_id"
+    t.string  "description",                         null: false
+    t.decimal "jd",          precision: 8, scale: 8, null: false
   end
 
 end

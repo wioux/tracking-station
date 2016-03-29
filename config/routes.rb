@@ -1,7 +1,7 @@
 Rails.application.routes.draw do
-  root to: 'bodies#browser'
+  root to: 'bodies#index'
 
-  resources :bodies, only: [:index]
+  resources :bodies, only: [:index, :show]
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

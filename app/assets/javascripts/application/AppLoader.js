@@ -1,14 +1,15 @@
 
-Loader = function(options) {
+AppLoader = function(options) {
   this.options = options || {};
 };
 
-Loader.prototype.loadBodies = function(callback) {
-  var self = this, bodies = {};
-  $.get('bodies.json', function(resp) {
+AppLoader.prototype.loadBodies = function(href, callback) {
+  var self = this, bodies = [];
+  $.get(href, function(resp) {
     resp.forEach(function(body) {
-      var object = self.createBodyFromJson(bodies, body);
-      window[body.name] = object;
+      var object = self.createBodyFromJson(body);
+      window[body.name.replace(/ /g, '_')] = object;
+      bodies.push(object);
     });
 
     callback(bodies);
@@ -17,16 +18,17 @@ Loader.prototype.loadBodies = function(callback) {
 
 // Private
 
-Loader.prototype.createBodyFromJson = function(system, json) {
+AppLoader.prototype.createBodyFromJson = function(json) {
   var body = new Body(json.name);
-  system[json.id] = body;
 
   body.id = json.id;
   body.spacecraft = (json.classification == 'Spacecraft');
   body.sun = (json.classification == 'Star');
   body.major = json.classification.match(/Planet/);
+  body.classification = json.classification;
 
   body.info = json.marked_up_info;
+  body.timeline = json.timeline_events;
 
   body.radiusKm = json.radius_km || 0.001;
 
@@ -46,8 +48,7 @@ Loader.prototype.createBodyFromJson = function(system, json) {
   if (json.sprite)
     body.sprite = this.options.textures + json.sprite;
 
-  if (json.parent_id)
-    system[json.parent_id].addSatellite(body);
+  body.parentId = json.parent_id;
 
   if (json.ephemerides) {
     json.ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });

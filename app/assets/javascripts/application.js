@@ -1,14 +1,36 @@
 //= require jquery
 //= require three
 //= require OrbitControls
-//= require domhelpers
 //= require_tree ./application
+//= require_tree ./3d
+//= require_tree ./Ui
 
 $(document).ready(function() {
-  new Loader({ textures: 'public/textures/' })
-    .loadBodies(function(bodies) {
-      var jd = Earth.ephemerides[0].jd;
-      var container = document.getElementById('ui');
-      window.sys = new SystemBrowser(container, Sun, parseFloat(jd));
-    });
+  $('.tracking-station').each(function() {
+    var container = this;
+    var root = parseInt($(this).data('root'));
+
+    new AppLoader({ textures: '/textures/' }).
+      loadBodies($(this).data('href'), function(bodies) {
+        var jd = 2455794.330554163;
+
+        root = bodies.find(function(x) { return x.id == root });
+
+        window.sys = new SystemBrowser(container, bodies, root);
+        window.sys.createMilkyWay('/textures/ESO_-_Milky_Way-Cropped.jpg');
+
+        var sidebar = $(_('div', { parent: container, class: 'sidebar' }));
+        new StatePanel(sys, sidebar);
+        new BodyListPanel(sys, sidebar);
+
+        new InfoPanels(sys, container);
+        new BodyTooltip(sys, container);
+        new EventPopups(sys, container);
+
+        if (!root.sun)
+          sys.setAmbientLight(0xffffff);
+
+        sys.start(jd);
+      });
+  });
 });

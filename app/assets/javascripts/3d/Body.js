@@ -1,11 +1,11 @@
 
-Body = function(name) {
-  this.id = 0;
+Body = function(name, attrs) {
+  this.id = name;
   this.name = name;
   this.color = 'gray';
 
   this.ephemerides = [];
-  this.orbit = new Orbit();
+  this.orbit = new Orbit(this);
 
   this.radiusKm = 0.002;
   this.spacecraft = false;
@@ -14,6 +14,9 @@ Body = function(name) {
   this.satellites = [];
 
   this.flags = 0x00;
+
+  for (var key in attrs)
+    this[key] = attrs[key];
 };
 
 Body.HIDDEN    = 0x01;
@@ -26,23 +29,25 @@ Body.prototype.addEphemerides = function(list) {
 };
 
 Body.prototype.selectEphemeris = function(jd) {
-  var eph = null;
-  for (var i=0; i < this.ephemerides.length; ++i) {
-    if (this.ephemerides[i].jd > jd)
-      break;
-    eph = this.ephemerides[i];
+  var mid, low = 0, high = this.ephemerides.length;
+  while (low != high) {
+    mid = Math.floor((low + high) / 2);
+    if (this.ephemerides[mid].jd <= jd)
+      low = mid + 1;
+    else
+      high = mid;
   }
 
-  if (eph) {
-    this.orbit.load(eph);
+  if (low > 0) {
+    this.orbit.load(this.ephemerides[low-1]);
     this.orbit.update(jd);
   }
 
-  return eph;
+  return low > 0 && this.ephemerides[low-1];
 };
 
 Body.prototype.addSatellite = function(satellite) {
-  if (this.satellites.indexOf(satellite) != -1)
+  if (satellite.orbit.body == this)
     return;
 
   if (satellite.orbit.body)
@@ -137,14 +142,11 @@ Body.prototype.updateObject3d = function(ctx, position) {
 };
 
 Body.prototype.applyAxialTilt = function() {
-  var raP = new THREE.Vector3();
   var np = new THREE.Vector3();
   var q = new THREE.Quaternion();
 
   return function(ra, dec) {
-    raP.copy(Equatorial.EQUINOX);
-    raP.applyAxisAngle(Equatorial.NORTH, Math.PI*ra/180.0)
-    np.copy(raP).applyAxisAngle(raP.cross(Equatorial.NORTH), Math.PI*dec/180.0);
+    Coord.equ(np, ra, dec);
 
     // Default sphere rotation leaves body pointing to <0, 1, 0>
     q.setFromUnitVectors(Ecliptic.SOLSTICE, np);
@@ -190,13 +192,17 @@ Body.prototype.createBodyObject = function(ctx) {
     }
   } else {
     props.color = this.color;
+    if (this.sun) {
+      props.emissive = this.color;
+      props.emissiveIntensity = 1.0;
+    }
   }
   this.object3d.body.material = new THREE.MeshLambertMaterial(props);
 
   var parts = this.texture ? 50 : 8;
   this.object3d.body.geometry =
     new THREE.BufferGeometry().fromGeometry(
-      new THREE.SphereGeometry(this.bodyRadius(ctx), parts, parts)
+      new THREE.SphereGeometry(this.bodyRadius(), parts, parts)
     );
 
   this.object3d.add(this.object3d.body);
@@ -223,22 +229,34 @@ Body.prototype.createIndicatorObject = function(ctx) {
 
 Body.prototype.createSunLightObject = function(ctx) {
   this.object3d.sunlight = new THREE.PointLight(0xffffff, 1.0, 0, 0);
+  this.object3d.sunlight.flare = new THREE.Sprite(
+    new THREE.SpriteMaterial({
+      map: ctx.loadTexture("/assets/lensflare0_alpha_centered.png"),
+      transparent: true,
+      opacity: 0.7
+    })
+  );
+
+  // specific to Sun / /lensflare0_alpha_centered.png
+  var scale = SystemBrowser.SCALE / 6.7;
+  this.object3d.sunlight.flare.scale.set(scale, scale, scale);
+  this.object3d.add(this.object3d.sunlight.flare);
   this.object3d.add(this.object3d.sunlight);
 };
 
-Body.prototype.bodyRadius = function(ctx) {
-  return this.radiusKm / Orbit.KM_PER_AU * ctx.auToPx;
+Body.prototype.bodyRadius = function() {
+  return SystemBrowser.SCALE * this.radiusKm / Orbit.KM_PER_AU;
 };
 
-Body.prototype.shellRadius = function(ctx) {
-//  return Math.tan(2 * Math.PI / 180.0) * ctx.auToPx;
-  return Math.tan(1 * Math.PI / 180.0) * ctx.auToPx;
+Body.prototype.shellRadius = function() {
+  return SystemBrowser.SCALE * Math.tan(1 * Math.PI / 180.0);
 };
 
-Body.prototype.scaleIndicator = function(ctx, pos, arc) {
-  var originalRadius = this.shellRadius(ctx);
-  var camDistanceAu = pos.distanceTo(this.object3d.position) / ctx.auToPx;
-  var newRadius = Math.tan(arc * Math.PI / 180.0) * camDistanceAu * ctx.auToPx;
+Body.prototype.scaleIndicator = function(pos, arc) {
+  var scale = SystemBrowser.SCALE;
+  var originalRadius = this.shellRadius();
+  var camDistanceAu = pos.distanceTo(this.object3d.position) / scale;
+  var newRadius = scale * Math.tan(arc * Math.PI / 180.0) * camDistanceAu;
 
   var m = this.sprite ? 60 : 1;
   this.object3d.indicator.scale.set(m*newRadius/originalRadius,
@@ -246,15 +264,15 @@ Body.prototype.scaleIndicator = function(ctx, pos, arc) {
                                     m*newRadius/originalRadius);
 
   if (this.orbit.body) {
-    camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / ctx.auToPx;
+    camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / scale;
 
-    if (Math.atan(this.orbit.a / camDistanceAu) < 0.035)
+    if (Math.atan(Math.abs(this.orbit.a) / camDistanceAu) < 0.035)
       this.flags |= Body.FADED;
     else
       this.flags &= ~Body.FADED;
   }
 
-  return newRadius / this.bodyRadius(ctx);
+  return newRadius / this.bodyRadius();
 };
 
 Body.prototype.setVisibility = function(visibility) {
