@@ -232,6 +232,7 @@ Body.prototype.createSunLightObject = function(ctx) {
       opacity: 0.7
     })
   );
+  this.object3d.sunlight.flare.userData = { body: this };
 
   // specific to Sun / /lensflare0_alpha_centered.png
   var scale = SystemBrowser.SCALE / 6.7;
