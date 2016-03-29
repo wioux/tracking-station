@@ -4,5 +4,4 @@ RAILS_ENV=production rake assets:precompile
 
 mv public/assets/*.js index.js
 mv public/assets/*.css index.css
-curl http://localhost:3000/bodies/1 -o index.html
 curl http://localhost:3000/bodies/1.json -o bodies/1.json
