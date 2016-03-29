@@ -10,14 +10,18 @@ $(document).ready(function() {
     var container = this;
     var root = parseInt($(this).data('root'));
 
-    new AppLoader({ textures: '/textures/' }).
+    new AppLoader({ textures: 'public/textures/' }).
       loadBodies($(this).data('href'), function(bodies) {
-        var jd = 2455794.330554163;
+//        var jd = 2450814.3755098176 - 14;
+//        var jd = 2453755.3; // new horizons
+        var jd = 2443392.038888889; // voyager 1, 2
+//        var jd = 2455794.330554163;
+//        var jd = 2450736.9;
 
         root = bodies.find(function(x) { return x.id == root });
 
         window.sys = new SystemBrowser(container, bodies, root);
-        window.sys.createMilkyWay('/textures/ESO_-_Milky_Way-Cropped.jpg');
+        window.sys.createMilkyWay('public/textures/ESO_-_Milky_Way-Cropped.jpg');
 
         var sidebar = $(_('div', { parent: container, class: 'sidebar' }));
         new StatePanel(sys, sidebar);
