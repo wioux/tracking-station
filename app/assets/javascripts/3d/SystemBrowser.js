@@ -73,7 +73,7 @@ SystemBrowser.prototype.setAmbientLight = function(color) {
 };
 
 SystemBrowser.prototype.render = function() {
-  this.applyVisibilityFlags()
+  this.applyVisibilityFeatures()
   this.renderer.render(this.scene, this.camera);
 };
 
@@ -241,31 +241,21 @@ SystemBrowser.prototype.centerCoordinates = function() {
   this.rootPosition.sub(this.focus.object3d.position);
 };
 
-SystemBrowser.prototype.applyVisibilityFlags = function() {
+SystemBrowser.prototype.applyVisibilityFeatures = function() {
   var body, localSystem = this.focus.localSystem();
-  var focusR = this.focus.scaleIndicator(this.camera.position, 2);
-  var fadeOpacity = Math.min(0.5, focusR / 9.0);
-  fadeOpacity = (fadeOpacity < 0.025) ? 0 : fadeOpacity;
+  var focusR = this.focus.indicator.deattenuate(this.camera.position,
+                                                sys.focus.highlighted ? 1.0 : 0.7);
 
   var context = this;
   this.eachBody(function() {
-    if (this.flags & Body.INVALID)
-      return this.setVisibility(false);
+    this.setCollapseThreshold(context.camera.position, 2);
+    this.indicator.deattenuate(context.camera.position, this.highlighted ? 1.0 : 0.7);
+    this.setVisibility(!(this.flags & (Body.HIDDEN | Body.COLLAPSED | Body.INVALID)));
 
-    this.scaleIndicator(context.camera.position, this.highlighted ? 1.0 : 0.7);
-    this.setVisibility(!(this.flags & (Body.HIDDEN | Body.FADED)));
-
-    if (localSystem.indexOf(this) == -1) {
-      this.setOrbitOpacity(fadeOpacity);
-      this.setIndicatorOpacity(this == context.root || this.major ? 0.5 : fadeOpacity);
-      if (fadeOpacity == 0) {
-        this.setOrbitVisibility(false);
-        this == context.root || this.major || this.setIndicatorVisibility(false);
-      }
-    } else {
-      this.setOrbitOpacity(0.5);
-      this.setIndicatorOpacity(0.5);
-    }
+    if (localSystem.indexOf(this) == -1)
+      this.orbit.indicator.setFade(focusR < 1 ? -0.01 : 0.01, 0.5);
+    else
+      this.orbit.indicator.setFade(0);
   });
 };
 
