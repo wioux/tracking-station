@@ -11,7 +11,7 @@ Camera = function(system) {
   this.position.z = scale;
 
   // Tuck controls under this.camera
-  this.controls = new THREE.OrbitControls(this, system.canvas);
+  this.controls = new THREE.OrbitControls(this, system.renderer.domElement);
   this.controls.enablePan = false;
   this.controls.zoomSpeed = 2.0;
 };

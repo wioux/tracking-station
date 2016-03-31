@@ -23,9 +23,9 @@ $(document).ready(function() {
         new StatePanel(sys, sidebar);
         new BodyListPanel(sys, sidebar);
 
-        new InfoPanels(sys, sys.canvas);
-        new BodyTooltip(sys, sys.canvas);
-        new EventPopups(sys, sys.canvas);
+        new InfoPanels(sys, container);
+        new BodyTooltip(sys, container);
+        new EventPopups(sys, container);
 
         if (!root.sun)
           sys.setAmbientLight(0xffffff);

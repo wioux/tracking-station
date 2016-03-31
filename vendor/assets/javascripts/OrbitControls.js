@@ -230,7 +230,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		document.removeEventListener( 'mousemove', onMouseMove, false );
 		document.removeEventListener( 'mouseup', onMouseUp, false );
-		document.removeEventListener( 'mouseout', onMouseUp, false );
+//		document.removeEventListener( 'mouseout', onMouseUp, false );
 
 		window.removeEventListener( 'keydown', onKeyDown, false );
 
@@ -724,7 +724,7 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 			document.addEventListener( 'mousemove', onMouseMove, false );
 			document.addEventListener( 'mouseup', onMouseUp, false );
-			document.addEventListener( 'mouseout', onMouseUp, false );
+//			document.addEventListener( 'mouseout', onMouseUp, false );
 
 			scope.dispatchEvent( startEvent );
 
@@ -764,20 +764,11 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( scope.enabled === false ) return;
 
-		if ( event.type == 'mouseout' && event.relatedTarget ) {
-                  var p = event.relatedTarget;
-                  while (p != null) {
-                    if (p == scope.domElement)
-                      return;
-                    p = p.parentNode;
-                  }
-                }
-
 		handleMouseUp( event );
 
 		document.removeEventListener( 'mousemove', onMouseMove, false );
 		document.removeEventListener( 'mouseup', onMouseUp, false );
-		document.removeEventListener( 'mouseout', onMouseUp, false );
+//		document.removeEventListener( 'mouseout', onMouseUp, false );
 
 		scope.dispatchEvent( endEvent );
 
