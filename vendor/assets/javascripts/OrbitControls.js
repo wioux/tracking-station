@@ -764,6 +764,15 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		if ( scope.enabled === false ) return;
 
+		if ( event.type == 'mouseout' && event.relatedTarget ) {
+                  var p = event.relatedTarget;
+                  while (p != null) {
+                    if (p == scope.domElement)
+                      return;
+                    p = p.parentNode;
+                  }
+                }
+
 		handleMouseUp( event );
 
 		document.removeEventListener( 'mousemove', onMouseMove, false );
