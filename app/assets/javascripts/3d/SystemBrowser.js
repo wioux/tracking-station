@@ -129,18 +129,18 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   canvas.appendChild(renderer.domElement);
   this.renderer = renderer;
 
+  var context = this;
+  this.eachBody(function() { this.createObject3d(context) });
+
   var camera = new Camera(this);
   // This is magical but works pretty well
-  camera.position.z = Math.pow(150 * this.root.bodyRadius(), 1.19);
+  camera.position.z = Math.pow(150 * this.root.radius3d, 1.19);
   this.focusPosition = new THREE.Vector3(0, 0, 0);
   this.camera = camera;
 
   var light = new THREE.AmbientLight(0x1a1a1a);
   scene.add(light);
   this.light = light;
-
-  var context = this;
-  this.eachBody(function() { this.createObject3d(context) });
 };
 
 SystemBrowser.prototype.bindEvents = function() {

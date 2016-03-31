@@ -34,7 +34,7 @@ BodyIndicator.prototype.deattenuate = function(camPos, arc) {
                           m*newRadius/this.radius3d,
                           m*newRadius/this.radius3d);
 
-  return newRadius / this.body.bodyRadius();
+  return newRadius / this.body.radius3d;
 };
 
 BodyIndicator.prototype.setVisibility = function(visibility) {

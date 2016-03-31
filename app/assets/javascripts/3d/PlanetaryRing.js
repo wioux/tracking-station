@@ -44,11 +44,11 @@ PlanetaryRing.prototype.createObject3d = function(ctx, body) {
   this.spotlight = new THREE.SpotLight(0xffffff);
   this.spotlight.castShadow = true;
   this.spotlight.angle = Math.PI / 30;
-  this.spotlight.shadow.camera.near = body.bodyRadius();
-  this.spotlight.shadow.camera.far = 30 * body.bodyRadius();
+  this.spotlight.shadow.camera.near = body.radius3d;
+  this.spotlight.shadow.camera.far = 30 * body.radius3d;
   this.spotlight.intensity = 0.25;
   this.spotlight.target = body.object3d;
-  this.spotlightDistance = 25 * body.bodyRadius();
+  this.spotlightDistance = 25 * body.radius3d;
 
   body.object3d.body.castShadow = true;
   this.object3d.receiveShadow = true;

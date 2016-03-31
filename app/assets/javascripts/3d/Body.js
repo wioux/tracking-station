@@ -165,6 +165,8 @@ Body.prototype.applyAxialTilt = function() {
 // Private
 
 Body.prototype.createObject3d = function(ctx) {
+  this.radius3d = SystemBrowser.SCALE * this.radiusKm / Orbit.KM_PER_AU;
+
   this.object3d = new THREE.Object3D();
   this.object3d.userData.body = this;
   ctx.scene.add(this.object3d);
@@ -203,7 +205,7 @@ Body.prototype.createBodyObject = function(ctx) {
   var parts = this.texture ? 50 : 8;
   this.object3d.body.geometry =
     new THREE.BufferGeometry().fromGeometry(
-      new THREE.SphereGeometry(this.bodyRadius(), parts, parts)
+      new THREE.SphereGeometry(this.radius3d, parts, parts)
     );
 
   this.object3d.add(this.object3d.body);
@@ -225,10 +227,6 @@ Body.prototype.createSunLightObject = function(ctx) {
   this.object3d.sunlight.flare.scale.set(scale, scale, scale);
   this.object3d.add(this.object3d.sunlight.flare);
   this.object3d.add(this.object3d.sunlight);
-};
-
-Body.prototype.bodyRadius = function() {
-  return SystemBrowser.SCALE * this.radiusKm / Orbit.KM_PER_AU;
 };
 
 // Collapse this body if its orbital radius, when
