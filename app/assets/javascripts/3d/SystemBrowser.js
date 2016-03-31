@@ -104,7 +104,7 @@ SystemBrowser.prototype.createMilkyWay = function(texture) {
 SystemBrowser.prototype.project = function(position) {
   var pos = position.clone().project(this.camera);
   return pos.set(this.canvas.clientWidth * (1 + pos.x) / 2,
-                 this.canvas.clientHeight * (1 - pos.y) / 2 + 20,
+                 this.canvas.clientHeight * (1 - pos.y) / 2,
                  0);
 };
 
