@@ -30,6 +30,9 @@ EventPopups = function(system, parent) {
   var map = function(pos) {
     pos = pos.clone().project(system.camera);
 
+    if (Math.abs(pos.x) >= 1 || Math.abs(pos.y) >= 1)
+      return null;
+
     var closest = null, dist = null;
     for (var i=0; i < sectors.length; ++i) {
       for (var j=0; j < sectors[i].length; ++j) {
@@ -61,9 +64,12 @@ EventPopups = function(system, parent) {
   system.eachBody(function(body) {
     body.timeline.forEach(function(event) {
       system.clock.on(event.jd, function() {
-        var popup = container(body, event);
         var sector = map(body.object3d.position);
+        if (!sector)
+          return;
+
         sector.occupied = true;
+        var popup = container(body, event);
 
         var pos2d1 = system.project(body.object3d.position);
         var pos2d2 = position(sector);
