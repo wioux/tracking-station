@@ -179,11 +179,11 @@ SystemBrowser.prototype.bindEvents = function() {
   document.addEventListener('keydown', function(e) {
     switch(e.which) {
     case 188:
-      self.clock.setWarp(self.clock.warp - 1);
+      self.clock.setWarp(self.clock.warp - (e.shiftKey ? 5 : 1));
       break;
 
     case 190:
-      self.clock.setWarp(self.clock.warp + 1);
+      self.clock.setWarp(self.clock.warp + (e.shiftKey ? 5 : 1));
       break;
     }
   });
