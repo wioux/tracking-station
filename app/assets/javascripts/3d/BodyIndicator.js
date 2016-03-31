@@ -16,7 +16,8 @@ BodyIndicator.prototype.createObject3d = function(sys) {
       ),
       new THREE.MeshBasicMaterial({
         color: this.body.color,
-        transparent: true
+        transparent: true,
+        opacity: 0.5
       })
     );
 
