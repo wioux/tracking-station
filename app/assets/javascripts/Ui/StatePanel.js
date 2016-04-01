@@ -1,14 +1,10 @@
 
 StatePanel = function(system, parent) {
   var state = _('div', { parent: parent, class: 'state' });
+
   _('div', { parent: state }, function(container) {
     _('label', { parent: container }).textContent = 'Date';
     _('span',  { parent: container, 'data-state': 'date' });
-  });
-
-  _('div', { parent: state }, function(container) {
-    _('label', { parent: container }).textContent = 'Time Warp';
-    _('span',  { parent: container, 'data-state': 'warp' });
   });
 
   _('div', { parent: state }, function(container) {
@@ -16,10 +12,27 @@ StatePanel = function(system, parent) {
     _('span',  { parent: container, 'data-state': 'focus' });
   });
 
+  _('div', { parent: state, style: "margin-top: 4px; text-align: center" }, function(container) {
+    _('label', { parent: container });
+    _('div',  { parent: container, 'data-state': 'warp' });
+
+    $(container.children[1]).slider({
+      min: -23,
+      max: 23,
+      slide: function(e, ui) {
+        system.clock.setWarp(ui.value);
+      }
+    });
+  });
+
+
   var ui = {
     focus: $(state).find('[data-state=focus]'),
     date: $(state).find('[data-state=date]'),
-    warp: $(state).find('[data-state=warp]')
+    warp: {
+      slider: $(state).find('[data-state=warp]'),
+      label: $(state).find('[data-state=warp]').parent().find('label')
+    }
   };
 
   var lastJd;
@@ -35,6 +48,7 @@ StatePanel = function(system, parent) {
   });
 
   system.clock.addEventListener('warp', function(e) {
-    ui.warp.text(e.warp);
+    $(ui.warp.slider).slider('value', e.warp);
+    $(ui.warp.label).text('Time Warp: '+e.warp);
   });
 };
