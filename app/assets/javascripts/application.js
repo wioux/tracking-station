@@ -1,4 +1,5 @@
 //= require jquery
+//= require jquery-ui
 //= require three
 //= require OrbitControls
 //= require_tree ./application

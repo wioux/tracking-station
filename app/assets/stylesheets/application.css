@@ -1,4 +1,5 @@
 /*
+ *= require jquery-ui
  *= require_tree .
  *= require_self
  */
@@ -174,6 +175,7 @@ html, body {
     font-family: monospace;
     font-weight: bold;
     z-index: 99;
+    cursor: default;
 }
 
 .tracking-station .event-popup {

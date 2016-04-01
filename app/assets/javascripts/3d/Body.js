@@ -17,11 +17,13 @@ Body = function(name, attrs) {
 
   for (var key in attrs)
     this[key] = attrs[key];
+
+  this.indicator = new BodyIndicator(this);
 };
 
-Body.HIDDEN    = 0x01;
-Body.FADED     = 0x02;
-Body.INVALID   = 0x04;
+Body.HIDDEN        = 0x01;
+Body.COLLAPSED     = 0x02;
+Body.INVALID       = 0x04;
 
 Body.prototype.addEphemerides = function(list) {
   for (var i=0; i < list.length; ++i)
@@ -123,14 +125,16 @@ Body.prototype.unhighlight = function() {
 };
 
 Body.prototype.updateObject3d = function(ctx, position) {
-  this.orbit.updateObject3d(ctx)
+  this.orbit.indicator.updateObject3d(ctx)
 
-  this.orbit.updateObject3d(ctx, this.color)
-
-  if (this == ctx.root)
+  if (this == ctx.root) {
     this.object3d.position.copy(position);
-  else
-    this.object3d.position.copy(this.orbit.satellitePosition);
+  } else {
+    this.object3d.position
+      .copy(this.orbit.satellitePosition)
+      .multiplyScalar(SystemBrowser.SCALE)
+      .add(this.orbit.body.object3d.position);
+  }
 
   this.rings && this.rings.updateObject3d(ctx, this);
 
@@ -163,14 +167,15 @@ Body.prototype.applyAxialTilt = function() {
 // Private
 
 Body.prototype.createObject3d = function(ctx) {
+  this.radius3d = SystemBrowser.SCALE * this.radiusKm / Orbit.KM_PER_AU;
+
   this.object3d = new THREE.Object3D();
   this.object3d.userData.body = this;
   ctx.scene.add(this.object3d);
 
   this.createBodyObject(ctx);
-  this.createIndicatorObject(ctx);
-
-  this.orbit.createObject3d(ctx, this.color);
+  this.indicator.createObject3d(ctx);
+  this.orbit.indicator.createObject3d(ctx, this.color);
 
   this.sun && this.createSunLightObject(ctx);
   this.rings && this.rings.createObject3d(ctx, this);
@@ -202,29 +207,10 @@ Body.prototype.createBodyObject = function(ctx) {
   var parts = this.texture ? 50 : 8;
   this.object3d.body.geometry =
     new THREE.BufferGeometry().fromGeometry(
-      new THREE.SphereGeometry(this.bodyRadius(), parts, parts)
+      new THREE.SphereGeometry(this.radius3d, parts, parts)
     );
 
   this.object3d.add(this.object3d.body);
-};
-
-Body.prototype.createIndicatorObject = function(ctx) {
-  if (this.sprite)
-    this.object3d.indicator = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: ctx.loadTexture(this.sprite) })
-    );
-  else
-    this.object3d.indicator = new THREE.Mesh(
-      new THREE.BufferGeometry().fromGeometry(
-        new THREE.SphereGeometry(this.shellRadius(ctx), 18, 18)
-      ),
-      new THREE.MeshBasicMaterial({
-        color: this.color,
-        transparent: true
-      })
-    );
-  this.object3d.indicator.userData.body = this;
-  this.object3d.add(this.object3d.indicator);
 };
 
 Body.prototype.createSunLightObject = function(ctx) {
@@ -236,6 +222,7 @@ Body.prototype.createSunLightObject = function(ctx) {
       opacity: 0.7
     })
   );
+  this.object3d.sunlight.flare.userData = { body: this };
 
   // specific to Sun / /lensflare0_alpha_centered.png
   var scale = SystemBrowser.SCALE / 6.7;
@@ -244,64 +231,22 @@ Body.prototype.createSunLightObject = function(ctx) {
   this.object3d.add(this.object3d.sunlight);
 };
 
-Body.prototype.bodyRadius = function() {
-  return SystemBrowser.SCALE * this.radiusKm / Orbit.KM_PER_AU;
-};
-
-Body.prototype.shellRadius = function() {
-  return SystemBrowser.SCALE * Math.tan(1 * Math.PI / 180.0);
-};
-
-Body.prototype.scaleIndicator = function(pos, arc) {
-  var scale = SystemBrowser.SCALE;
-  var originalRadius = this.shellRadius();
-  var camDistanceAu = pos.distanceTo(this.object3d.position) / scale;
-  var newRadius = scale * Math.tan(arc * Math.PI / 180.0) * camDistanceAu;
-
-  var m = this.sprite ? 60 : 1;
-  this.object3d.indicator.scale.set(m*newRadius/originalRadius,
-                                    m*newRadius/originalRadius,
-                                    m*newRadius/originalRadius);
-
+// Collapse this body if its orbital radius, when
+// viewed from above at pos, is less than min degrees
+Body.prototype.setCollapseThreshold = function(pos, min) {
   if (this.orbit.body) {
-    camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / scale;
-
-    if (Math.atan(Math.abs(this.orbit.a) / camDistanceAu) < 0.035)
-      this.flags |= Body.FADED;
+    var scale = SystemBrowser.SCALE;
+    var camDistanceAu = pos.distanceTo(this.orbit.body.object3d.position) / scale;
+    var rAu = Math.abs(this.orbit.a);
+    if (180.0*Math.atan(rAu / camDistanceAu)/Math.PI < min)
+      this.flags |= Body.COLLAPSED;
     else
-      this.flags &= ~Body.FADED;
+      this.flags &= ~Body.COLLAPSED;
   }
-
-  return newRadius / this.bodyRadius();
 };
 
 Body.prototype.setVisibility = function(visibility) {
-  this.setOrbitVisibility(visibility);
-  this.setBodyVisibility(visibility);
-  this.setIndicatorVisibility(visibility);
-};
-
-Body.prototype.setOpacity = function(opacity) {
-  this.setOrbitOpacity(opacity);
-  this.setIndicatorOpacity(opacity);
-};
-
-Body.prototype.setOrbitOpacity = function(opacity) {
-  this.orbit.object3d && (this.orbit.object3d.material.opacity = opacity);
-};
-
-Body.prototype.setIndicatorOpacity = function(opacity) {
-  this.object3d.indicator.material.opacity = opacity;
-};
-
-Body.prototype.setOrbitVisibility = function(visibility) {
-  this.orbit.object3d && (this.orbit.object3d.visible = !!visibility);
-};
-
-Body.prototype.setBodyVisibility = function(visibility) {
-  this.object3d.body.visible = !!visibility;
-};
-
-Body.prototype.setIndicatorVisibility = function(visibility) {
-  this.object3d.indicator.visible = !!visibility;
+  this.orbit.indicator.setVisibility(visibility);
+  this.indicator.setVisibility(visibility);
+  this.object3d.visibile = visibility;
 };

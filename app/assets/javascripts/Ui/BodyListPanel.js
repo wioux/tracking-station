@@ -13,7 +13,8 @@ BodyListPanel = function(system, parent) {
     var name = root.name;
     var id = root.id;
     var li = _('li', {
-      'class': 'indent-'+indent
+      'class': 'indent-'+indent,
+      'style': 'display: '+(indent > 1 ? "none" : "block")
     });
 
     var check = _('input', { 'parent': li, 'type': 'checkbox', 'name': id });
@@ -30,31 +31,44 @@ BodyListPanel = function(system, parent) {
 
   populate(BodyListPanel.createTree(system), 0);
 
+  var childElements = function(el) {
+    var children = [];
+    var child = el.nextSibling;
+    var level = parseInt(el.className.match(/indent-(\d+)/)[1]);
+    while (child && level < parseInt(child.className.match(/indent-(\d+)/)[1])) {
+      children.push(child);
+      child = child.nextSibling;
+    }
+
+    return children;
+  };
+
   system.addEventListener('focus', function(e) {
-    $(list).find('li.focused').removeClass('focused');
-    $(list).find('li > input[type=checkbox][name='+system.focus.id+']').
-      parent().addClass('focused');
+    var li = list.querySelector('li.focused');
+    li && li.classList.remove('focused');
+
+    li = list.querySelector('li > input[name="'+e.body.id+'"]').parentNode;
+    li.classList.add('focused');
   });
 
   $(list).on('change', 'input[type=checkbox]', function(e) {
     var body = system.bodies[e.target.name];
+    e.target.checked ? body.show() : body.hide();
 
-    var toggle = function(body, display) {
-      display ? body.show() : body.hide();
-
-      // broken
-      body.satellites.forEach(function(satellite) {
-        var child = $(list).find('input[name='+satellite.id+']');
-        toggle(satellite, display && child.prop('checked'));
-        child.prop('disabled', !display);
-      });
-    };
-
-    toggle(body, e.target.checked);
+    childElements(e.target.parentNode).forEach(function(li) {
+      var checkbox = $(li).find('input[type=checkbox]')[0];
+      body = system.bodies[checkbox.name];
+      checkbox.checked = e.target.checked;
+      checkbox.disabled = !e.target.checked;
+      e.target.checked ? body.show() : body.hide();
+    });
   });
 
   $(list).on('click', 'li', function(e) {
     if ($(e.target).is('input[type=checkbox]'))
+      return;
+
+    if (e.detail > 1)
       return;
 
     var li = e.target;
@@ -64,6 +78,18 @@ BodyListPanel = function(system, parent) {
     var id = $(li).find('input[type=checkbox]').attr('name');
     var body = system.bodies[id] || system.bodies[parseInt(id)];
     system.setFocus(body);
+  });
+
+  $(list).on('dblclick', 'li', function(e) {
+    e.preventDefault();
+
+    var li = $(e.target).closest('li')[0];
+    childElements(li).forEach(function(li) {
+      if (li.style.display == 'none')
+        li.style.display = 'block';
+      else
+        li.style.display = 'none';
+    });
   });
 };
 

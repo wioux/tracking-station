@@ -49,6 +49,15 @@ InfoPanels = function(system, parent) {
       ui.container.show();
     }
   });
+
+  system.addEventListener('focus', function(e) {
+    if (!e.body.timeline.length)
+      return;
+
+    $(panels).find('.button[data-panel=timeline]').trigger('click');
+    if (!$(panels).find('.button[data-panel=timeline]').hasClass('selected'))
+      $(panels).find('.button[data-panel=timeline]').trigger('click');
+  });
 };
 
 // Private
