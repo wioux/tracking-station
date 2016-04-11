@@ -58,36 +58,46 @@ OrbitIndicator.prototype.setVisibility = function(visibility) {
 // private
 
 OrbitIndicator.prototype.positionHyperbolicGeometry = function() {
-  var a = this.orbit.a,
-      c = Math.abs(a) + this.orbit.qr,
-      b = Math.sqrt(c*c - a*a),
+  var ec = this.orbit.ec,
+      a = this.orbit.a,
+      oa = this.orbit.oa,
       mja = this.orbit.mja,
-      mna = this.orbit.mna,
       geometry = this.object3d.geometry,
       scale = SystemBrowser.SCALE;
-  for (var p, th, i=0; i < geometry.vertices.length; ++i) {
-    th = 2 * Math.PI * i / (geometry.vertices.length - 1) - Math.PI;
 
-    geometry.vertices[i].copy(this.orbit.C)
-      .addScaledVector(mja, scale * a * Math.cosh(th))
-      .addScaledVector(mna, scale * b * Math.sinh(th));
+  for (var ta, r, i=0; i < geometry.vertices.length; ++i) {
+    ta = 180.0 * i / (geometry.vertices.length - 1) - 90.0;
+
+    r = -a*(ec*ec - 1.0) /
+        (1.0 - ec*Math.cos(Math.PI*(180.0 - ta) / 180.0));
+
+    geometry.vertices[i]
+      .copy(mja)
+      .applyAxisAngle(oa,  Math.PI*ta/180.0)
+      .setLength(scale * r);
   }
+
   geometry.verticesNeedUpdate = true;
 };
 
 OrbitIndicator.prototype.positionEllipticalGeometry = function() {
-  var a = this.orbit.a,
-      b = a * Math.sqrt(1.0 - Math.max(0, this.orbit.ec*this.orbit.ec)),
+  var ec = this.orbit.ec,
+      a = this.orbit.a,
+      oa = this.orbit.oa,
       mja = this.orbit.mja,
-      mna = this.orbit.mna,
       geometry = this.object3d.geometry,
       scale = SystemBrowser.SCALE;
-  for (var p, th, i=0; i < geometry.vertices.length; ++i) {
-    th = 2 * Math.PI * i / (geometry.vertices.length - 1);
 
-    geometry.vertices[i].copy(this.orbit.C)
-      .addScaledVector(mja, scale * a * Math.cos(th))
-      .addScaledVector(mna, scale * b * Math.sin(th));
+  for (var ta, r, i=0; i < geometry.vertices.length; ++i) {
+    ta = 360.0 * i / (geometry.vertices.length - 1);
+
+    r = a*(1-ec*ec)/(1+ec*Math.cos(Math.PI*ta/180.0));
+
+    geometry.vertices[i]
+      .copy(mja)
+      .applyAxisAngle(oa, Math.PI*ta/180.0)
+      .setLength(scale * r);
   }
+
   geometry.verticesNeedUpdate = true;
 };
