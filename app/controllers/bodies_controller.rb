@@ -41,6 +41,6 @@ class BodiesController < ApplicationController
                preload(:ephemerides, :timeline_events)
     end
 
-    bodies.uniq!
+    bodies.tap(&:uniq!)
   end
 end
