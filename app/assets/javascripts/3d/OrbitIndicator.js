@@ -4,18 +4,60 @@ OrbitIndicator = function(orbit) {
 };
 
 OrbitIndicator.prototype.createObject3d = function(ctx, color) {
-  this.object3d = new THREE.Line();
-  this.object3d.material = new THREE.LineBasicMaterial({
-    color: color,
-    linewidth: 2,
-    transparent: true
+  color = new THREE.Color(color);
+  color = new THREE.Vector4(color.r, color.g, color.b, 1.0);
+
+  var material = new THREE.ShaderMaterial({
+    linewidth: 1.5,
+    transparent: true,
+
+    uniforms: {
+      ta: { type: "f", value: 0.0 },
+      trail: { type: "f", value: 0.0 },
+      opacity: { type: "f", value: 1.0 },
+      color: { type: "v4", value: color },
+    },
+
+    vertexShader: [
+      "attribute float theta;",
+      "varying float fragTheta;",
+
+      "void main() {",
+      "fragTheta = theta;",
+      "  gl_Position = projectionMatrix *",
+      "                modelViewMatrix *",
+      "                vec4(position, 1.0);",
+      "}"
+    ].join("\n"),
+
+    // need to change the behavior here for retrograde orbits
+    fragmentShader: [
+      "uniform float ta;",
+      "uniform float trail;",
+      "uniform float opacity;",
+      "uniform vec4 color;",
+      "varying float fragTheta;",
+
+      "void main() {",
+      "  float th;",
+      "  if (ta < fragTheta)",
+      "    th = 6.283185307179586 - (fragTheta - ta);",
+      "  else",
+      "    th = ta - fragTheta;",
+
+      "  float pie = pow(1.0 - th / 6.283185307179586, trail);",
+
+      "  gl_FragColor = opacity * pie * color;",
+      "}"
+    ].join("\n")
   });
+  material.depthWrite = false;
 
-  this.object3d.geometry = new THREE.Geometry();
+  var geometry = new THREE.BufferGeometry();
+  geometry.addAttribute("position", new THREE.BufferAttribute(new Float32Array(3*720), 3));
+  geometry.addAttribute("theta", new THREE.BufferAttribute(new Float32Array(720), 1));
 
-  for (var i=0; i <= 720; ++i)
-    this.object3d.geometry.vertices.push(new THREE.Vector3());
-
+  this.object3d = new THREE.Line(geometry, material);
   this.orbit.body && this.orbit.body.object3d.add(this.object3d);
 };
 
@@ -31,11 +73,17 @@ OrbitIndicator.prototype.updateObject3d = function(ctx) {
   if (this.ephemeris != this.orbit.ephemeris) {
     this.ephemeris = this.orbit.ephemeris;
 
-    if (this.orbit.ec < 1)
+    if (this.orbit.ec < 1) {
       this.positionEllipticalGeometry();
-    else
+      this.object3d.material.uniforms.trail.value = 0.1;
+    } else {
       this.positionHyperbolicGeometry();
+      this.object3d.material.uniforms.trail.value = 12.8;
+    }
   }
+
+  this.object3d.material.uniforms.ta.value = Math.PI*this.orbit.ta/180.0;
+  this.object3d.material.uniforms.opacity.value = this.object3d.material.opacity;
 };
 
 OrbitIndicator.prototype.setFade = function(fade) {
@@ -46,9 +94,6 @@ OrbitIndicator.prototype.setFade = function(fade) {
   } else {
     this.object3d.material.opacity = 0.5;
   }
-
-  if (this.object3d.visible)
-    this.object3d.visible = (this.object3d.material.opacity > 0.05);
 };
 
 OrbitIndicator.prototype.setVisibility = function(visibility) {
@@ -63,21 +108,31 @@ OrbitIndicator.prototype.positionHyperbolicGeometry = function() {
       oa = this.orbit.oa,
       mja = this.orbit.mja,
       geometry = this.object3d.geometry,
+      vertices = geometry.getAttribute("position").array,
+      thetas = geometry.getAttribute("theta").array,
       scale = SystemBrowser.SCALE;
 
-  for (var ta, r, i=0; i < geometry.vertices.length; ++i) {
-    ta = 180.0 * i / (geometry.vertices.length - 1) - 90.0;
+  var p = new THREE.Vector3();
+  var maxn = 180.0 * Math.acos(-1/ec) / Math.PI - 0.001; // true anomaly at infinity
+  for (var ta, r, i=0; i < vertices.length; i += 3) {
+    ta = 2 * maxn * (i/3) / (vertices.length/3 - 1) - maxn;
 
     r = -a*(ec*ec - 1.0) /
         (1.0 - ec*Math.cos(Math.PI*(180.0 - ta) / 180.0));
 
-    geometry.vertices[i]
+    p
       .copy(mja)
       .applyAxisAngle(oa,  Math.PI*ta/180.0)
       .setLength(scale * r);
+
+    vertices[i + 0] = p.x;
+    vertices[i + 1] = p.y;
+    vertices[i + 2] = p.z;
+    thetas[i/3] = Math.PI * ta / 180.0;
   }
 
-  geometry.verticesNeedUpdate = true;
+  geometry.getAttribute("position").needsUpdate = true;
+  geometry.getAttribute("theta").needsUpdate = true;
 };
 
 OrbitIndicator.prototype.positionEllipticalGeometry = function() {
@@ -86,18 +141,27 @@ OrbitIndicator.prototype.positionEllipticalGeometry = function() {
       oa = this.orbit.oa,
       mja = this.orbit.mja,
       geometry = this.object3d.geometry,
+      vertices = geometry.getAttribute("position").array,
+      thetas = geometry.getAttribute("theta").array,
       scale = SystemBrowser.SCALE;
 
-  for (var ta, r, i=0; i < geometry.vertices.length; ++i) {
-    ta = 360.0 * i / (geometry.vertices.length - 1);
+  var p = new THREE.Vector3();
+  for (var ta, r, i=0; i < vertices.length; i += 3) {
+    ta = 360.0 * (i/3) / (vertices.length/3 - 1);
 
     r = a*(1-ec*ec)/(1+ec*Math.cos(Math.PI*ta/180.0));
 
-    geometry.vertices[i]
+    p
       .copy(mja)
       .applyAxisAngle(oa, Math.PI*ta/180.0)
       .setLength(scale * r);
+
+    vertices[i + 0] = p.x;
+    vertices[i + 1] = p.y;
+    vertices[i + 2] = p.z;
+    thetas[i/3] = Math.PI * ta / 180.0;
   }
 
-  geometry.verticesNeedUpdate = true;
+  geometry.getAttribute("position").needsUpdate = true;
+  geometry.getAttribute("theta").needsUpdate = true;
 };

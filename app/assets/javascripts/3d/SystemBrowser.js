@@ -122,8 +122,9 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   scene.up.set(0, 0, 1);
   this.scene = scene;
 
-  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.setClearColor(0x000000);
   renderer.shadowMap.enabled = true,
   renderer.shadowMap.type = THREE.PCFShadowMap;
   canvas.appendChild(renderer.domElement);
