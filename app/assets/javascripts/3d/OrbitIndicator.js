@@ -165,3 +165,14 @@ OrbitIndicator.prototype.positionEllipticalGeometry = function() {
   geometry.getAttribute("position").needsUpdate = true;
   geometry.getAttribute("theta").needsUpdate = true;
 };
+
+OrbitIndicator.prototype.createGhost = function() {
+  if (!this.object3d.parent)
+    return null;
+
+  var ghost = new THREE.Line();
+  ghost.material = this.object3d.material.clone();
+  ghost.geometry = this.object3d.geometry.clone();
+  this.object3d.parent.add(ghost);
+  return ghost;
+};

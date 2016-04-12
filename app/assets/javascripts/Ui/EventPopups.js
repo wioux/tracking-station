@@ -78,6 +78,20 @@ EventPopups = function(system, parent) {
         popup.style.top = pos2d1.y + 'px';
         popup.style.transform = 'scale(0.1)';
 
+        var ghostFade, ghostOrbit = body.orbit.indicator.createGhost();
+        if (ghostOrbit) {
+          ghostFade = setInterval(function() {
+            ghostOrbit.material.uniforms.opacity.value -= 0.005;
+
+            if (ghostOrbit.material.uniforms.opacity.value <= 0) {
+              clearInterval(ghostFade);
+              ghostOrbit.parent.remove(ghostOrbit);
+              ghostOrbit.material.dispose();
+              ghostOrbit.geometry.dispose();
+            }
+          }, 58);
+        }
+
         $(popup).animate({ left: pos2d2.x, top: pos2d2.y }, {
           progress: function(_, progress) {
             popup.style.transform = 'scale('+progress+')';
