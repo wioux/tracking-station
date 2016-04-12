@@ -32,6 +32,16 @@ $(document).ready(function() {
           sys.setAmbientLight(0xffffff);
 
         sys.start(jd);
+
+        bodies
+          .filter(function(body) { return body.ephemerides.href })
+          .forEach(function(body) {
+            $.get(body.ephemerides.href, function(ephemerides) {
+              ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });
+              ephemerides.sort(function(a, b) { return a.jd - b.jd });
+              body.ephemerides.addAll(ephemerides);
+            });
+          });
       });
   });
 });

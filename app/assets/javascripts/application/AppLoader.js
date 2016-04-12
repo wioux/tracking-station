@@ -53,8 +53,10 @@ AppLoader.prototype.createBodyFromJson = function(json) {
   if (json.ephemerides) {
     json.ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });
     json.ephemerides.sort(function(a, b) { return a.jd - b.jd });
-    body.addEphemerides(json.ephemerides);
+    body.ephemerides.addAll(json.ephemerides);
   }
+
+  body.ephemerides.href = json.ephemerides_url;
 
   return body;
 };

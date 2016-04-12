@@ -39,13 +39,16 @@ SystemBrowser.prototype.eachBody = function(action) {
 };
 
 SystemBrowser.prototype.update = function(jd) {
+  var sys = this;
   var bodies = this.bodies;
   this.eachBody(function(body) {
-    if (body == this.root)
+    if (body == sys.root)
       return;
 
     var eph;
-    if ((eph = body.selectEphemeris(jd))) {
+    if ((eph = body.ephemerides.select(jd))) {
+      body.orbit.load(eph);
+      body.orbit.update(jd);
       bodies[eph.central_body_id].addSatellite(body);
       body.flags &= ~Body.INVALID;
     } else {

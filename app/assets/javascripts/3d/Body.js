@@ -4,7 +4,7 @@ Body = function(name, attrs) {
   this.name = name;
   this.color = 'gray';
 
-  this.ephemerides = [];
+  this.ephemerides = new Ephemerides(this);
   this.orbit = new Orbit(this);
 
   this.radiusKm = 0.002;
@@ -24,29 +24,6 @@ Body = function(name, attrs) {
 Body.HIDDEN        = 0x01;
 Body.COLLAPSED     = 0x02;
 Body.INVALID       = 0x04;
-
-Body.prototype.addEphemerides = function(list) {
-  for (var i=0; i < list.length; ++i)
-    this.ephemerides.push(list[i]);
-};
-
-Body.prototype.selectEphemeris = function(jd) {
-  var mid, low = 0, high = this.ephemerides.length;
-  while (low != high) {
-    mid = Math.floor((low + high) / 2);
-    if (this.ephemerides[mid].jd <= jd)
-      low = mid + 1;
-    else
-      high = mid;
-  }
-
-  if (low > 0) {
-    this.orbit.load(this.ephemerides[low-1]);
-    this.orbit.update(jd);
-  }
-
-  return low > 0 && this.ephemerides[low-1];
-};
 
 Body.prototype.addSatellite = function(satellite) {
   if (satellite.orbit.body == this)
