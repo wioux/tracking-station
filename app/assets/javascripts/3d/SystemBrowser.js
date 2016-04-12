@@ -254,7 +254,7 @@ SystemBrowser.prototype.applyVisibilityFeatures = function() {
     this.setVisibility(!(this.flags & (Body.HIDDEN | Body.COLLAPSED | Body.INVALID)));
 
     if (localSystem.indexOf(this) == -1)
-      this.orbit.indicator.setFade(focusR < 1 ? -0.01 : 0.01, 0.5);
+      this.orbit.indicator.setFade(focusR < 2.5 ? -0.01 : 0.01);
     else
       this.orbit.indicator.setFade(0);
   });
