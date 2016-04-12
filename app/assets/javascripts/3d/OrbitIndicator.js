@@ -89,10 +89,10 @@ OrbitIndicator.prototype.updateObject3d = function(ctx) {
 OrbitIndicator.prototype.setFade = function(fade) {
   if (fade) {
     this.object3d.material.opacity += (fade < 0 ? -0.01 : 0.01);
-    this.object3d.material.opacity = Math.min(0.5, this.object3d.material.opacity);
+    this.object3d.material.opacity = Math.min(1.0, this.object3d.material.opacity);
     this.object3d.material.opacity = Math.max(0, this.object3d.material.opacity);
   } else {
-    this.object3d.material.opacity = 0.5;
+    this.object3d.material.opacity = 1.0;
   }
 };
 
