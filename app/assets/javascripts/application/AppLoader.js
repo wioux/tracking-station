@@ -3,6 +3,28 @@ AppLoader = function(options) {
   this.options = options || {};
 };
 
+AppLoader.prototype.loadSystem = function(container, startJd, callback) {
+  var loader = this;
+  this.loadBodies(container.dataset.href, function(bodies) {
+    var root = bodies.find(function(x) { return x.id == container.dataset.root });
+
+    var sys = new SystemBrowser(container, bodies, root);
+
+    if (!root.sun)
+      sys.setAmbientLight(0xffffff);
+
+    if (container.dataset.focus) {
+      var focus = bodies.find(function(x) { return x.id == container.dataset.focus });
+      sys.setFocus(focus);
+    }
+
+    sys.start(startJd);
+    loader.loadEphemerides(bodies);
+
+    callback && callback(sys);
+  });
+};
+
 AppLoader.prototype.loadBodies = function(href, callback) {
   var self = this, bodies = [];
   $.get(href, function(resp) {
