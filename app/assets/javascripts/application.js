@@ -10,9 +10,10 @@ $(document).ready(function() {
   $('.tracking-station').each(function() {
     var container = this;
     var root = parseInt($(this).data('root'));
+    var trackingStation = this;
 
-    new AppLoader({ textures: '/textures/' }).
-      loadBodies($(this).data('href'), function(bodies) {
+    new AppLoader({ textures: '/textures/' })
+      .loadBodies($(this).data('href'), function(bodies) {
         var jd = 2455794.330554163;
 
         root = bodies.find(function(x) { return x.id == root });
@@ -30,6 +31,11 @@ $(document).ready(function() {
 
         if (!root.sun)
           sys.setAmbientLight(0xffffff);
+
+        if (trackingStation.dataset.focus) {
+          var focus = bodies.find(function(x) { return x.id == trackingStation.dataset.focus });
+          sys.setFocus(focus);
+        }
 
         sys.start(jd);
 

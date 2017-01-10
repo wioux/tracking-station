@@ -1,4 +1,6 @@
 <div id="ui"
      class="tracking-station"
      data-root="<%= @body.id %>"
-     data-href="<%= body_path(@body, format: 'json', bodies: @satellite_ids) %>"></div>
+     data-href="<%= body_path(@body, format: 'json', bodies: @satellite_ids) %>"
+     <% if params[:focus] %>data-focus="<%= params[:focus] %>"<% end %>
+     ></div>

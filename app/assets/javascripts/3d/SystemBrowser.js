@@ -27,7 +27,12 @@ SystemBrowser.SCALE = 1000; // 3d coordinates per AU
 
 SystemBrowser.prototype.start = function(jd) {
   this.update(jd);
-  this.setFocus(this.root);
+
+  if (!this.focus)
+    this.setFocus(this.root);
+
+  // This is magical but works pretty well
+  this.camera.position.z = Math.pow(150 * this.focus.radius3d, 1.19);
 
   this.clock.setWarp(17).start(jd);
   this.animate();
@@ -46,7 +51,7 @@ SystemBrowser.prototype.update = function(jd) {
       return;
 
     var eph;
-    if ((eph = body.ephemerides.select(jd))) {
+    if ((eph = body.ephemerides.select(jd)) && bodies[eph.central_body_id]) {
       body.orbit.load(eph);
       body.orbit.update(jd);
       bodies[eph.central_body_id].addSatellite(body);
@@ -137,9 +142,6 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   this.eachBody(function() { this.createObject3d(context) });
 
   var camera = new Camera(this);
-  // This is magical but works pretty well
-  camera.position.z = Math.pow(150 * this.root.radius3d, 1.19);
-  this.focusPosition = new THREE.Vector3(0, 0, 0);
   this.camera = camera;
 
   var light = new THREE.AmbientLight(0x1a1a1a);
