@@ -16,6 +16,18 @@ AppLoader.prototype.loadBodies = function(href, callback) {
   });
 };
 
+AppLoader.prototype.loadEphemerides = function(bodies) {
+  bodies
+    .filter(function(body) { return body.ephemerides.href })
+    .forEach(function(body) {
+      $.get(body.ephemerides.href, function(ephemerides) {
+        ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });
+        ephemerides.sort(function(a, b) { return a.jd - b.jd });
+        body.ephemerides.addAll(ephemerides);
+      });
+    });
+};
+
 // Private
 
 AppLoader.prototype.createBodyFromJson = function(json) {
