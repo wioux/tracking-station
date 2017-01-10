@@ -150,7 +150,7 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
 };
 
 SystemBrowser.prototype.bindEvents = function() {
-  var self = this;
+  var self = this, sys = this;
 
   this.canvas.addEventListener('mousedown', function(e) {
     var mouse = self.localizeMouse(e);
@@ -250,7 +250,7 @@ SystemBrowser.prototype.centerCoordinates = function() {
 SystemBrowser.prototype.applyVisibilityFeatures = function() {
   var body, localSystem = this.focus.localSystem();
   var focusR = this.focus.indicator.deattenuate(this.camera.position,
-                                                sys.focus.highlighted ? 1.0 : 0.7);
+                                                this.focus.highlighted ? 1.0 : 0.7);
 
   var context = this;
   this.eachBody(function() {
