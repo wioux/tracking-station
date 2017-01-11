@@ -48,7 +48,7 @@ StatePanel = function(system, parent) {
   });
 
   system.clock.addEventListener('warp', function(e) {
-    $(ui.warp.slider).slider('value', e.warp);
-    $(ui.warp.label).text('Time Warp: ' + e.warp.toFixed(1));
+    $(ui.warp.slider).slider('value', system.clock.warp);
+    $(ui.warp.label).text('Time Warp: ' + system.clock.warp.toFixed(1));
   });
 };
