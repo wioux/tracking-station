@@ -43,10 +43,13 @@ StatePanel = function(system, parent) {
     lastJd = jd;
   });
 
+  ui.focus.text(system.focus.name);
   system.addEventListener('focus', function(e) {
     ui.focus.text(e.body.name);
   });
 
+  $(ui.warp.slider).slider('value', system.clock.warp);
+  $(ui.warp.label).text('Time Warp: ' + system.clock.warp.toFixed(1));
   system.clock.addEventListener('warp', function(e) {
     $(ui.warp.slider).slider('value', system.clock.warp);
     $(ui.warp.label).text('Time Warp: ' + system.clock.warp.toFixed(1));
