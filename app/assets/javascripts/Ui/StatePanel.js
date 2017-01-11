@@ -49,6 +49,6 @@ StatePanel = function(system, parent) {
 
   system.clock.addEventListener('warp', function(e) {
     $(ui.warp.slider).slider('value', e.warp);
-    $(ui.warp.label).text('Time Warp: '+e.warp);
+    $(ui.warp.label).text('Time Warp: ' + e.warp.toFixed(1));
   });
 };

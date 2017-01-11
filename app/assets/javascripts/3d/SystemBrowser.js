@@ -13,6 +13,7 @@ SystemBrowser = function(ui, bodies, root, jd) {
 
   this.createWebGLComponents(ui);
   this.bindEvents();
+  this.createCamera();
 };
 
 Events(
@@ -142,15 +143,17 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   var context = this;
   this.eachBody(function() { this.createObject3d(context) });
 
-  var camera = new Camera(this);
-  this.camera = camera;
-
   var light = new THREE.AmbientLight(0x1a1a1a);
   scene.add(light);
   this.light = light;
 
   if (!this.root.sun)
     this.setAmbientLight(0xffffff);
+};
+
+SystemBrowser.prototype.createCamera = function() {
+  var camera = new Camera(this);
+  this.camera = camera;
 };
 
 SystemBrowser.prototype.bindEvents = function() {
@@ -201,6 +204,16 @@ SystemBrowser.prototype.bindEvents = function() {
   this.canvas.addEventListener('mousemove', function(e) {
     self.visualizeRayCastEnabled && self.visualizeRayCast(e);
   });
+
+  this.renderer.domElement.addEventListener('wheel', function(e) {
+    if (e.shiftKey && e.deltaY) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      var w = sys.clock.warp - e.deltaY / 8.0;
+      sys.clock.setWarp(Math.max( Math.min(w, 25), -25 ));
+    }
+  }, false);
 
   window.addEventListener('resize', function() {
     self.camera.aspect = self.canvas.clientWidth / self.canvas.clientHeight;
