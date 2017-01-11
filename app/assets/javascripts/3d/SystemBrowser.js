@@ -9,6 +9,7 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.rootPosition = new THREE.Vector3();
 
   this.clock = new Clock();
+  this.clock.setWarp(17);
 
   this.createWebGLComponents(ui);
   this.bindEvents();
@@ -34,7 +35,7 @@ SystemBrowser.prototype.start = function(jd) {
   // This is magical but works pretty well
   this.camera.position.z = Math.pow(150 * this.focus.radius3d, 1.19);
 
-  this.clock.setWarp(17).start(jd);
+  this.clock.start(jd);
   this.animate();
 };
 
@@ -147,6 +148,9 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   var light = new THREE.AmbientLight(0x1a1a1a);
   scene.add(light);
   this.light = light;
+
+  if (!this.root.sun)
+    this.setAmbientLight(0xffffff);
 };
 
 SystemBrowser.prototype.bindEvents = function() {
