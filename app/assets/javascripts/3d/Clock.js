@@ -66,6 +66,6 @@ Clock.prototype.dispatchEvents = function(t0, t1) {
   for (var e, i=0; i < this.events.length; ++i) {
     e = this.events[i];
     if (t0 <= e.jd && e.jd <= t1)
-      e['callback']();
+      e['callback'](this.dt > 0);
   }
 };

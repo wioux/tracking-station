@@ -138,6 +138,7 @@
 .tracking-station .panels .panel .content ul.timeline-events {
     list-style-type: none;
     padding: 0px;
+    margin: -8px -12px;
 }
 
 .tracking-station .panels .panel .content ul.timeline-events .date {
@@ -145,14 +146,32 @@
     font-weight: bold;
 }
 
-.tracking-station .panels .panel .content ul.timeline-events li:not(:first-child) {
-    margin-top: 4px;
+.tracking-station .panels .panel .content ul.timeline-events li {
+    padding: 8px 12px;
 }
 
 .tracking-station .panels .panel .content ul.timeline-events .description {
     display: block;
     margin-left: 10px;
     white-space: nowrap;
+}
+
+.tracking-station .panels .panel .content .timeline-events .transpired[data-event_id] {
+  background-color: #515b67;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1) }
+  50% { transform: scale(1.07) }
+  100% { transform: scale(1) }
+}
+
+.pulse {
+  animation-fill-mode: both;
+  animation-iteration-count: 2;
+
+  animation-duration: 1s;
+  animation-name: pulse;
 }
 
 .tracking-station .body-tooltip {

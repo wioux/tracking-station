@@ -29,7 +29,7 @@ InfoPanels = function(system, parent) {
     var name = system.focus.name + ' (' + system.focus.classification + ')';
     panel.find('.body-name').text(name.toUpperCase());
     panel.find('.panel-title').text('Timeline');
-    panel.find('.content').html(self.getTimelineFor(system.focus));
+    panel.find('.content').html(self.getTimelineFor(system.focus, system.clock.jd));
   });
 
   ui.container.on('click', '.timeline-events a[data-jd]', function(e) {
@@ -62,9 +62,11 @@ InfoPanels = function(system, parent) {
 
 // Private
 
-InfoPanels.prototype.getTimelineFor = function(body) {
+InfoPanels.prototype.getTimelineFor = function(body, jd) {
   var events = body.timeline.map(function(event) {
     return _('li', {
+      "data-event_id": event.id,
+      "class": event.jd <= jd ? "transpired" : "",
       children: [
         _('span', { class: 'date', children: [JulianDay.toString(event.jd)] }),
         _('a', { class: 'description', 'data-jd': event.jd, href: '#', children: [event.description] })
