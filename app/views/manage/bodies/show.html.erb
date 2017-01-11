@@ -1,0 +1,47 @@
+<h1><%= @body.name %></h1>
+<h2><%= @body.classification %></h2>
+
+<div class="system"
+     data-root="<%= @body.id %>"
+     data-href="<%= body_path(@body, format: :json) %>">
+</div>
+
+<h3>Timeline Events</h3>
+<% if @body.timeline_events.present? %>
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Event</th></tr>
+    </thead>
+  
+    <tbody>
+      <% @body.timeline_events.each do |event| %>
+        <tr>
+          <td><%= DateTime.jd(event.jd).strftime("%b %e, %Y %H:%M") %></td>
+          <td><%= event.description %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <em>None</em>
+<% end %>
+
+<h3>Inferred Events</h3>
+<% if @body.inferred_events.present? %>
+  <table>
+    <thead>
+      <tr><th>Date</th><th>Event</th></tr>
+    </thead>
+  
+    <tbody>
+      <% @body.inferred_events.each do |event| %>
+        <tr>
+          <td><%= DateTime.jd(event.jd).strftime("%b %e, %Y %H:%M") %></td>
+          <td><%= event.description %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <em>None</em>
+<% end %>

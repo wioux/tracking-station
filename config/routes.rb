@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
   root to: 'bodies#index'
 
+  namespace :manage do
+    resources :bodies do
+      collection{ get :search }
+    end
+  end
+
   resources :bodies, only: [:index, :show] do
     resources :ephemerides, only: :index
   end
