@@ -72,6 +72,7 @@ SystemBrowser.prototype.update = function(jd) {
 };
 
 SystemBrowser.prototype.setFocus = function(body) {
+  this.previousFocus = this.focus;
   this.focus = body;
   this.camera.setTarget(body);
   this.pan(body.object3d.position, function() { this.centerCoordinates() });
@@ -197,6 +198,11 @@ SystemBrowser.prototype.bindEvents = function() {
 
     case 190:
       self.clock.setWarp(self.clock.warp + (e.shiftKey ? 5 : 1));
+      break;
+
+    case 8:
+      if (self.previousFocus)
+        self.setFocus(self.previousFocus);
       break;
     }
   });
