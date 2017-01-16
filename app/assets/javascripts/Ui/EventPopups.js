@@ -5,11 +5,11 @@ EventPopups = function(system, parent) {
       system.clock.on(event.jd, function(forward) {
         if (forward) {
           $(".timeline-events [data-event_id="+event.id+"]")
-            .addClass("transpired")
+            .addClass("transpired pulse-background")
             .find(".description").addClass("pulse");
         } else {
           $(".timeline-events [data-event_id="+event.id+"]")
-            .removeClass("transpired")
+            .removeClass("transpired pulse-background")
             .find(".description").removeClass("pulse");
         }
       });
