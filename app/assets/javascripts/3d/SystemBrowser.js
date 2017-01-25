@@ -33,9 +33,6 @@ SystemBrowser.prototype.start = function(jd) {
   if (!this.focus)
     this.setFocus(this.root);
 
-  // This is magical but works pretty well
-  this.camera.position.z = Math.pow(150 * this.focus.radius3d, 1.19);
-
   this.clock.start(jd);
   this.animate();
 };
@@ -80,7 +77,10 @@ SystemBrowser.prototype.setFocus = function(body) {
 };
 
 SystemBrowser.prototype.setAmbientLight = function(color) {
-  this.light.color = new THREE.Color(color);
+  if (!this.light) {
+    this.light =  new THREE.AmbientLight(color);
+    this.scene.add(this.light);
+  }
 };
 
 SystemBrowser.prototype.render = function() {
@@ -143,10 +143,6 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
 
   var context = this;
   this.eachBody(function() { this.createObject3d(context) });
-
-  var light = new THREE.AmbientLight(0x1a1a1a);
-  scene.add(light);
-  this.light = light;
 
   if (!this.root.sun)
     this.setAmbientLight(0xffffff);
@@ -212,11 +208,12 @@ SystemBrowser.prototype.bindEvents = function() {
   });
 
   this.renderer.domElement.addEventListener('wheel', function(e) {
-    if (e.shiftKey && e.deltaY) {
+    if (e.shiftKey && (e.wheelDelta || e.detail)) {
       e.preventDefault();
       e.stopPropagation();
 
-      var w = sys.clock.warp - e.deltaY / 8.0;
+      var d = e.wheelDelta || -e.detail;
+      var w = sys.clock.warp + d / 128;
       sys.clock.setWarp(Math.max( Math.min(w, 25), -25 ));
     }
   }, false);
@@ -331,7 +328,7 @@ SystemBrowser.prototype.debugPosition = function(pos, color) {
 
   var mat = new THREE.PointsMaterial({
     color: color || 0xff0000,
-    size: 4.0,
+    size: 8.0,
     sizeAttenuation: false
   });
 

@@ -31,7 +31,13 @@ Camera.prototype.setTarget = function(body) {
 
   this.controls.minDistance = 1.6 * r;
   this.controls.target = body.object3d.position;
-}
+};
+
+Camera.prototype.setDistance = function(km) {
+  var p = this.position.clone().sub(this.controls.target);
+  p = p.normalize().multiplyScalar(km / Orbit.KM_PER_AU).add(this.controls.target);
+  this.position.set(p.x, p.y, p.z);
+};
 
 if (!Float64Array.from) {
   Float64Array.from = function(array) {
