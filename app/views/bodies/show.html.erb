@@ -2,5 +2,8 @@
      class="tracking-station"
      data-root="<%= @body.id %>"
      data-href="<%= body_path(@body, format: 'json', bodies: @satellite_ids) %>"
+     <% if params[:jd] %>data-jd="<%= params[:jd] %>"<% end %>
+     <% if params[:warp] %>data-warp="<%= params[:warp] %>"<% end %>
      <% if params[:focus] %>data-focus="<%= params[:focus] %>"<% end %>
+     <% if params[:cameraR] %>data-camera_radius=<%= params[:cameraR] %><% end %>
      ></div>

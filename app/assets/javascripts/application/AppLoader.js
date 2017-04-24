@@ -15,6 +15,17 @@ AppLoader.prototype.loadSystem = function(container, startJd, callback) {
       sys.setFocus(focus);
     }
 
+    // This is magical but works pretty well
+    sys.camera.position.z = Math.pow(150 * sys.focus.radius3d, 1.19);
+    if (container.dataset.camera_radius)
+      sys.camera.setDistance(parseFloat(container.dataset.camera_radius));
+
+    if (container.dataset.jd)
+      startJd = parseFloat(container.dataset.jd);
+
+    if (container.dataset.warp)
+      sys.clock.setWarp(parseFloat(container.dataset.warp));
+
     sys.start(startJd);
     loader.loadEphemerides(bodies);
 

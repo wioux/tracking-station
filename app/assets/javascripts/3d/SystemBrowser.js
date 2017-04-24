@@ -33,9 +33,6 @@ SystemBrowser.prototype.start = function(jd) {
   if (!this.focus)
     this.setFocus(this.root);
 
-  // This is magical but works pretty well
-  this.camera.position.z = Math.pow(150 * this.focus.radius3d, 1.19);
-
   this.clock.start(jd);
   this.animate();
 };
