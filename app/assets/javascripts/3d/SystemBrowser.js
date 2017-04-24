@@ -208,11 +208,12 @@ SystemBrowser.prototype.bindEvents = function() {
   });
 
   this.renderer.domElement.addEventListener('wheel', function(e) {
-    if (e.shiftKey && e.deltaY) {
+    if (e.shiftKey && (e.wheelDelta || e.detail)) {
       e.preventDefault();
       e.stopPropagation();
 
-      var w = sys.clock.warp - e.deltaY / 8.0;
+      var d = e.wheelDelta || -e.detail;
+      var w = sys.clock.warp + d / 128;
       sys.clock.setWarp(Math.max( Math.min(w, 25), -25 ));
     }
   }, false);
