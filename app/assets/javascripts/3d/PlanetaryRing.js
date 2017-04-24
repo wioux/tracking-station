@@ -12,21 +12,51 @@ PlanetaryRing.prototype.updateObject3d = function() {
     // this assumes Sun is root and has already been positioned
     sunline.copy(ctx.root.object3d.position)
       .sub(body.object3d.position).normalize();
-    this.spotlight.position.copy(body.object3d.position)
-      .addScaledVector(sunline, this.spotlightDistance);
+
+    if (this.body.northPole) {
+      var ecliptic = new THREE.Plane(Ecliptic.NORTH);
+      var np = this.body.northPole.clone().normalize();
+      var ray = new THREE.Ray( this.body.object3d.position.clone(), np );
+
+      var plane = new THREE.Plane(this.body.northPole, -0.005);
+
+      var p = sunline.clone().cross(this.body.northPole);
+      var correction = sunline.clone().multiplyScalar(0.001);
+      for (var th, i=0; i < this.shadow.geometry.vertices.length; ++i) {
+        th = i * 2 * Math.PI / this.shadow.geometry.vertices.length;
+        ray.origin.set(p.x, p.y, p.z)
+          .applyAxisAngle(sunline, th)
+          .normalize().multiplyScalar(-1.05 * this.body.radius3d);
+
+        ray.direction.copy(sunline).multiplyScalar(-1);
+        ray.intersectPlane(plane, this.shadow.geometry.vertices[i]);
+
+        while (this.shadow.geometry.vertices[i].length() > 1.01 * this.outerRadiusKm/Orbit.KM_PER_AU*SystemBrowser.SCALE)
+          this.shadow.geometry.vertices[i].add(correction);
+
+        while (this.shadow.geometry.vertices[i].length() < 0.95 * this.innerRadiusKm/Orbit.KM_PER_AU*SystemBrowser.SCALE)
+          this.shadow.geometry.vertices[i].sub(correction);
+      }
+
+      this.shadow.geometry.verticesNeedUpdate = true;
+    }
   };
 }();
 
 PlanetaryRing.prototype.createObject3d = function(ctx, body) {
   var emissivecolor = 0xffffff;
-  this.object3d = new THREE.Mesh();
+  this.object3d = new THREE.Object3D();
   this.object3d.up.set(0, 0, 1);
+  this.object3d.rotation.set(-Math.PI/2, 0, 0);
 
-  this.object3d.geometry =
+  this.object3d.ring = new THREE.Mesh();
+  this.object3d.ring.up.set(0, 0, 1);
+
+  this.object3d.ring.geometry =
     new THREE.SweptRingGeometry(SystemBrowser.SCALE*this.innerRadiusKm/Orbit.KM_PER_AU,
                                 SystemBrowser.SCALE*this.outerRadiusKm/Orbit.KM_PER_AU,
                                 30, 30);
-  this.object3d.material = new THREE.MeshPhongMaterial({
+  this.object3d.ring.material = new THREE.MeshPhongMaterial({
     map: ctx.loadTexture(this.texture),
     side: THREE.DoubleSide,
     transparent: true,
@@ -35,25 +65,44 @@ PlanetaryRing.prototype.createObject3d = function(ctx, body) {
     emissiveMap: ctx.loadTexture(this.texture),
     emissiveIntensity: 0.4
   });
-  this.object3d.rotation.set(-Math.PI/2, 0, 0);
 
-  // Shadows cast from the Sun don't look good (it is too far away).
-  // So we invent a spotlight pointing at the rings from about 25 body radii away.
-  // Still need to work on this problem... It creates a spotlight in the scene
-  // which may have unwanted effects
-  this.spotlight = new THREE.SpotLight(0xffffff);
-  this.spotlight.castShadow = true;
-  this.spotlight.angle = Math.PI / 30;
-  this.spotlight.shadow.camera.near = body.radius3d;
-  this.spotlight.shadow.camera.far = 30 * body.radius3d;
-  this.spotlight.intensity = 0.25;
-  this.spotlight.target = body.object3d;
-  this.spotlightDistance = 25 * body.radius3d;
-
-  body.object3d.body.castShadow = true;
-  this.object3d.receiveShadow = true;
-
-  ctx.scene.add(this.spotlight);
-
+  this.object3d.add(this.object3d.ring);
   body.object3d.add(this.object3d);
+
+  var shadowMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+  this.shadow = new THREE.Mesh(new THREE.Geometry(), shadowMat);
+
+  for (var i=0; i < 35; ++i)
+    this.shadow.geometry.vertices.push(new THREE.Vector3());
+
+  var F = 17;
+  this.shadow.geometry.faces.push(new THREE.Face3(0, 1, F));
+  this.shadow.geometry.faces.push(new THREE.Face3(0, 1, F-1));
+  this.shadow.geometry.faces.push(new THREE.Face3(1, F-1, F));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(1, F-2, F-1));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(1, 2, F-2));
+  this.shadow.geometry.faces.push(new THREE.Face3(2, F-3, F-2));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(2, 3, F-3));
+  this.shadow.geometry.faces.push(new THREE.Face3(3, F-4, F-3));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(3, 4, F-4));
+  this.shadow.geometry.faces.push(new THREE.Face3(4, F-5, F-4));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(4, 5, F-5));
+  this.shadow.geometry.faces.push(new THREE.Face3(5, F-6, F-5));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(5, 6, F-6));
+  this.shadow.geometry.faces.push(new THREE.Face3(6, F-7, F-6));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(6, 7, F-7));
+  this.shadow.geometry.faces.push(new THREE.Face3(7, F-8, F-7));
+
+  this.shadow.geometry.faces.push(new THREE.Face3(7, 8, 9));
+
+  body.object3d.add(this.shadow);
+
+  this.body = body;
 };

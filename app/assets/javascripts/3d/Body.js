@@ -120,24 +120,22 @@ Body.prototype.updateObject3d = function(ctx, position) {
     this.satellites[i].updateObject3d(ctx);
 };
 
-Body.prototype.applyAxialTilt = function() {
-  var np = new THREE.Vector3();
-  var q = new THREE.Quaternion();
+Body.prototype.applyAxialTilt = function(ra, dec) {
+  this.northPole = this.northPole || new THREE.Vector3();
+  this.quaternion = this.quaternion || new THREE.Quaternion();
 
-  return function(ra, dec) {
-    Coord.equ(np, ra, dec);
+  Coord.equ(this.northPole, ra, dec);
 
-    // Default sphere rotation leaves body pointing to <0, 1, 0>
-    q.setFromUnitVectors(Ecliptic.SOLSTICE, np);
-    this.object3d.body.rotation.setFromQuaternion(q);
+  // Default sphere rotation leaves body pointing to <0, 1, 0>
+  this.quaternion.setFromUnitVectors(Ecliptic.SOLSTICE, this.northPole);
+  this.object3d.body.rotation.setFromQuaternion(this.quaternion);
 
-    // Default ring rotation leaves them pointing to <0, 0, 1>
-    if (this.rings) {
-      q.setFromUnitVectors(Ecliptic.NORTH, np);
-      this.rings.object3d.rotation.setFromQuaternion(q);
-    }
-  };
-}();
+  // Default ring rotation leaves them pointing to <0, 0, 1>
+  if (this.rings) {
+    this.quaternion.setFromUnitVectors(Ecliptic.NORTH, this.northPole);
+    this.rings.object3d.rotation.setFromQuaternion(this.quaternion);
+  }
+};
 
 // Private
 
