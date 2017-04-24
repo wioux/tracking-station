@@ -5,7 +5,9 @@ BodyIndicator = function(body) {
 };
 
 BodyIndicator.prototype.createObject3d = function(sys) {
-  if (this.body.sprite)
+  if (this.body.sun)
+    this.object3d = new THREE.Object3D();
+  else if (this.body.sprite)
     this.object3d = new THREE.Sprite(
       new THREE.SpriteMaterial({ map: sys.loadTexture(this.body.sprite) })
     );

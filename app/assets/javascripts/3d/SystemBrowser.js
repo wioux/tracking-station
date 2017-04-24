@@ -80,7 +80,10 @@ SystemBrowser.prototype.setFocus = function(body) {
 };
 
 SystemBrowser.prototype.setAmbientLight = function(color) {
-  this.light.color = new THREE.Color(color);
+  if (!this.light) {
+    this.light =  new THREE.AmbientLight(color);
+    this.scene.add(this.light);
+  }
 };
 
 SystemBrowser.prototype.render = function() {
@@ -143,10 +146,6 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
 
   var context = this;
   this.eachBody(function() { this.createObject3d(context) });
-
-  var light = new THREE.AmbientLight(0x1a1a1a);
-  scene.add(light);
-  this.light = light;
 
   if (!this.root.sun)
     this.setAmbientLight(0xffffff);
