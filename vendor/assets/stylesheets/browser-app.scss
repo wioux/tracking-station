@@ -49,6 +49,13 @@ html, body {
 .browser-app-viewport {
   overflow-y: auto;
   padding-left: 15px;
+
+  /* dirty hack for what should be padding.. */
+  .browser-app-viewport-content::after {
+    content: "";
+    display: block;
+    height: 15px;
+  }
 }
 
 /* Actions box layout */
