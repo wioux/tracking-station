@@ -1,7 +1,15 @@
 Rails.application.routes.draw do
   root to: 'bodies#index'
 
-  resources :bodies, only: [:index, :show]
+  namespace :manage do
+    resources :bodies do
+      collection{ get :search }
+    end
+  end
+
+  resources :bodies, only: [:index, :show] do
+    resources :ephemerides, only: :index
+  end
 
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".

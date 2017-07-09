@@ -3,6 +3,36 @@ AppLoader = function(options) {
   this.options = options || {};
 };
 
+AppLoader.prototype.loadSystem = function(container, startJd, callback) {
+  var loader = this;
+  this.loadBodies(container.dataset.href, function(bodies) {
+    var root = bodies.find(function(x) { return x.id == container.dataset.root });
+
+    var sys = new SystemBrowser(container, bodies, root);
+
+    if (container.dataset.focus) {
+      var focus = bodies.find(function(x) { return x.id == container.dataset.focus });
+      sys.setFocus(focus);
+    }
+
+    // This is magical but works pretty well
+    sys.camera.position.z = Math.pow(150 * sys.focus.radius3d, 1.19);
+    if (container.dataset.camera_radius)
+      sys.camera.setDistance(parseFloat(container.dataset.camera_radius));
+
+    if (container.dataset.jd)
+      startJd = parseFloat(container.dataset.jd);
+
+    if (container.dataset.warp)
+      sys.clock.setWarp(parseFloat(container.dataset.warp));
+
+    sys.start(startJd);
+    loader.loadEphemerides(bodies);
+
+    callback && callback(sys);
+  });
+};
+
 AppLoader.prototype.loadBodies = function(href, callback) {
   var self = this, bodies = [];
   $.get(href, function(resp) {
@@ -14,6 +44,18 @@ AppLoader.prototype.loadBodies = function(href, callback) {
 
     callback(bodies);
   });
+};
+
+AppLoader.prototype.loadEphemerides = function(bodies) {
+  bodies
+    .filter(function(body) { return body.ephemerides.href })
+    .forEach(function(body) {
+      $.get(body.ephemerides.href, function(ephemerides) {
+        ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });
+        ephemerides.sort(function(a, b) { return a.jd - b.jd });
+        body.ephemerides.addAll(ephemerides);
+      });
+    });
 };
 
 // Private
@@ -53,8 +95,10 @@ AppLoader.prototype.createBodyFromJson = function(json) {
   if (json.ephemerides) {
     json.ephemerides.forEach(function(eph) { eph.jd = parseFloat(eph.jd) });
     json.ephemerides.sort(function(a, b) { return a.jd - b.jd });
-    body.addEphemerides(json.ephemerides);
+    body.ephemerides.addAll(json.ephemerides);
   }
+
+  body.ephemerides.href = json.ephemerides_url;
 
   return body;
 };

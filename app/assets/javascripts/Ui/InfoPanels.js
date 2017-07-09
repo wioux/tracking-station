@@ -1,5 +1,5 @@
 
-InfoPanels = function(system, parent) {
+InfoPanels = function(system, parent, initialTimeline) {
   var panels = _('div', { parent: parent, class: 'panels' });
   panels.innerHTML =
     '<div class="buttons">' +
@@ -29,7 +29,7 @@ InfoPanels = function(system, parent) {
     var name = system.focus.name + ' (' + system.focus.classification + ')';
     panel.find('.body-name').text(name.toUpperCase());
     panel.find('.panel-title').text('Timeline');
-    panel.find('.content').html(self.getTimelineFor(system.focus));
+    panel.find('.content').html(self.getTimelineFor(system.focus, system.clock.jd));
   });
 
   ui.container.on('click', '.timeline-events a[data-jd]', function(e) {
@@ -58,13 +58,30 @@ InfoPanels = function(system, parent) {
     if (!$(panels).find('.button[data-panel=timeline]').hasClass('selected'))
       $(panels).find('.button[data-panel=timeline]').trigger('click');
   });
+
+  // ugly
+  if (initialTimeline) {
+    var setupTimeline;
+    setupTimeline = system.addEventListener('update', function() {
+      system.removeEventListener('update', setupTimeline);
+
+      var focus = system.focus;
+      system.focus = system.bodies[initialTimeline];
+
+      $(panels).find('.button[data-panel=timeline]').trigger('click');
+
+      system.focus = focus;
+    });
+  }
 };
 
 // Private
 
-InfoPanels.prototype.getTimelineFor = function(body) {
+InfoPanels.prototype.getTimelineFor = function(body, jd) {
   var events = body.timeline.map(function(event) {
     return _('li', {
+      "data-event_id": event.id,
+      "class": event.jd <= jd ? "transpired" : "",
       children: [
         _('span', { class: 'date', children: [JulianDay.toString(event.jd)] }),
         _('a', { class: 'description', 'data-jd': event.jd, href: '#', children: [event.description] })

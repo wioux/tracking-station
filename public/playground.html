@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body { width: 100%; height: 100%; margin: 0; padding: 0 }
+
+      .shader { display: none }
+    </style>
+  </head>
+
+  <body>
+    <div id="canvas" style="width: 100%; height: 100%"></div>
+
+    <div id="vertex" class="shader">
+attribute float theta;
+varying float fragTheta;
+
+void main() {
+  fragTheta = theta;
+  gl_Position = projectionMatrix *
+                modelViewMatrix *
+                vec4(position, 1.0);
+}
+    </div>
+
+    <div id="fragment" class="shader">
+uniform float ta;
+varying float fragTheta;
+
+void main() {
+  float th;
+  if (ta < fragTheta)
+    th = 6.283185307179586 - (fragTheta - ta);
+  else
+    th = ta - fragTheta;
+
+  float pie = pow(1.0 - th / 6.283185307179586, 8.8);
+
+  gl_FragColor = pie*vec4(1.0,  // R
+                          0.0,  // G
+                          0.0,  // B
+                          1.0); // A
+}
+    </div>
+  </body>
+
+  <script type="text/javascript" src="../vendor/assets/javascripts/three.js"></script>
+  <script type="text/javascript" src="../vendor/assets/javascripts/OrbitControls.js"></script>
+  <script type="text/javascript">
+  (function() {
+    function render(){ renderer.render(scene, camera); }
+    function animate(){ render(); requestAnimationFrame(animate) };
+
+    canvas = document.getElementById("canvas");
+
+    scene = new THREE.Scene();
+    scene.up.set(0, 0, 1);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+    renderer.shadowMap.enabled = true,
+    renderer.shadowMap.type = THREE.PCFShadowMap;
+    canvas.appendChild(renderer.domElement);
+
+    camera = new THREE.PerspectiveCamera(70, canvas.clientWidth / canvas.clientHeight,
+                                         0.0001, 1000000);
+    camera.up.set(0, 0, 1);
+    camera.position.z = 10;
+
+    thetas = [];
+    positions = [];
+    p = new THREE.Vector3();
+    ec = 0;
+    a = 5.0;
+    mja = new THREE.Vector3(1, 0, 0);
+    oa = new THREE.Vector3(0, 0, 1);
+    scale = 1;
+    for (var i=0; i < 360.0; ++i) {
+      thetas.push(i * Math.PI / 180.0);
+//      positions.push(5 * Math.cos(thetas[i]), 5 * Math.sin(thetas[i]), 0)
+
+      ta = 360.0 * i / (360 - 1);
+
+      r = a*(1-ec*ec)/(1+ec*Math.cos(Math.PI*ta/180.0));
+
+      p
+        .copy(mja)
+        .applyAxisAngle(oa, Math.PI*ta/180.0)
+        .setLength(scale * r);
+
+      positions.push(p.x, p.y, p.z);
+
+    }
+
+    positions = Float32Array.from(positions);
+    thetas = Float32Array.from(thetas);
+
+    geo = new THREE.BufferGeometry();
+    geo.addAttribute("position", new THREE.BufferAttribute(positions, 3));
+    geo.addAttribute("theta", new THREE.BufferAttribute(thetas, 1));
+
+    ta = 3*Math.PI/2;
+    mat = new THREE.ShaderMaterial({
+      linewidth: 2,
+      transparent: true,
+      uniforms: { ta: { type: "f", value: ta } },
+      vertexShader: document.querySelector('.shader#vertex').textContent,
+      fragmentShader: document.querySelector('.shader#fragment').textContent
+    });
+//    mat = new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 2 });
+
+    line = new THREE.Line(geo, mat);
+    scene.add(line);
+
+    sphere = new THREE.SphereGeometry(100, 10, 10);
+    spheremat = new THREE.MeshBasicMaterial({
+      color: 16761035,
+      side: THREE.BackSide
+    });
+    scene.add(new THREE.Mesh(sphere, spheremat));
+
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.enablePan = false;
+
+    setInterval(function() {
+      ta = (ta + 0.005) % (2 * Math.PI);
+      mat.uniforms.ta.value = ta;
+    }, 16);
+
+    animate();
+  })();
+  </script>
+</html>

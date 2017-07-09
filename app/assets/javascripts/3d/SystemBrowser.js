@@ -9,9 +9,11 @@ SystemBrowser = function(ui, bodies, root, jd) {
   this.rootPosition = new THREE.Vector3();
 
   this.clock = new Clock();
+  this.clock.setWarp(17);
 
   this.createWebGLComponents(ui);
   this.bindEvents();
+  this.createCamera();
 };
 
 Events(
@@ -27,9 +29,11 @@ SystemBrowser.SCALE = 1000; // 3d coordinates per AU
 
 SystemBrowser.prototype.start = function(jd) {
   this.update(jd);
-  this.setFocus(this.root);
 
-  this.clock.setWarp(17).start(jd);
+  if (!this.focus)
+    this.setFocus(this.root);
+
+  this.clock.start(jd);
   this.animate();
 };
 
@@ -39,13 +43,16 @@ SystemBrowser.prototype.eachBody = function(action) {
 };
 
 SystemBrowser.prototype.update = function(jd) {
+  var sys = this;
   var bodies = this.bodies;
   this.eachBody(function(body) {
-    if (body == this.root)
+    if (body == sys.root)
       return;
 
     var eph;
-    if ((eph = body.selectEphemeris(jd))) {
+    if ((eph = body.ephemerides.select(jd)) && bodies[eph.central_body_id]) {
+      body.orbit.load(eph);
+      body.orbit.update(jd);
       bodies[eph.central_body_id].addSatellite(body);
       body.flags &= ~Body.INVALID;
     } else {
@@ -62,6 +69,7 @@ SystemBrowser.prototype.update = function(jd) {
 };
 
 SystemBrowser.prototype.setFocus = function(body) {
+  this.previousFocus = this.focus;
   this.focus = body;
   this.camera.setTarget(body);
   this.pan(body.object3d.position, function() { this.centerCoordinates() });
@@ -69,7 +77,10 @@ SystemBrowser.prototype.setFocus = function(body) {
 };
 
 SystemBrowser.prototype.setAmbientLight = function(color) {
-  this.light.color = new THREE.Color(color);
+  if (!this.light) {
+    this.light =  new THREE.AmbientLight(color);
+    this.scene.add(this.light);
+  }
 };
 
 SystemBrowser.prototype.render = function() {
@@ -122,8 +133,9 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   scene.up.set(0, 0, 1);
   this.scene = scene;
 
-  var renderer = new THREE.WebGLRenderer({ antialias: true });
+  var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
   renderer.setSize(canvas.clientWidth, canvas.clientHeight);
+  renderer.setClearColor(0x000000);
   renderer.shadowMap.enabled = true,
   renderer.shadowMap.type = THREE.PCFShadowMap;
   canvas.appendChild(renderer.domElement);
@@ -132,19 +144,17 @@ SystemBrowser.prototype.createWebGLComponents = function(ui) {
   var context = this;
   this.eachBody(function() { this.createObject3d(context) });
 
-  var camera = new Camera(this);
-  // This is magical but works pretty well
-  camera.position.z = Math.pow(150 * this.root.radius3d, 1.19);
-  this.focusPosition = new THREE.Vector3(0, 0, 0);
-  this.camera = camera;
+  if (!this.root.sun)
+    this.setAmbientLight(0xffffff);
+};
 
-  var light = new THREE.AmbientLight(0x1a1a1a);
-  scene.add(light);
-  this.light = light;
+SystemBrowser.prototype.createCamera = function() {
+  var camera = new Camera(this);
+  this.camera = camera;
 };
 
 SystemBrowser.prototype.bindEvents = function() {
-  var self = this;
+  var self = this, sys = this;
 
   this.canvas.addEventListener('mousedown', function(e) {
     var mouse = self.localizeMouse(e);
@@ -185,12 +195,28 @@ SystemBrowser.prototype.bindEvents = function() {
     case 190:
       self.clock.setWarp(self.clock.warp + (e.shiftKey ? 5 : 1));
       break;
+
+    case 8:
+      if (self.previousFocus)
+        self.setFocus(self.previousFocus);
+      break;
     }
   });
 
   this.canvas.addEventListener('mousemove', function(e) {
     self.visualizeRayCastEnabled && self.visualizeRayCast(e);
   });
+
+  this.renderer.domElement.addEventListener('wheel', function(e) {
+    if (e.shiftKey && (e.wheelDelta || e.detail)) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      var d = e.wheelDelta || -e.detail;
+      var w = sys.clock.warp + d / 128;
+      sys.clock.setWarp(Math.max( Math.min(w, 25), -25 ));
+    }
+  }, false);
 
   window.addEventListener('resize', function() {
     self.camera.aspect = self.canvas.clientWidth / self.canvas.clientHeight;
@@ -244,7 +270,7 @@ SystemBrowser.prototype.centerCoordinates = function() {
 SystemBrowser.prototype.applyVisibilityFeatures = function() {
   var body, localSystem = this.focus.localSystem();
   var focusR = this.focus.indicator.deattenuate(this.camera.position,
-                                                sys.focus.highlighted ? 1.0 : 0.7);
+                                                this.focus.highlighted ? 1.0 : 0.7);
 
   var context = this;
   this.eachBody(function() {
@@ -253,7 +279,7 @@ SystemBrowser.prototype.applyVisibilityFeatures = function() {
     this.setVisibility(!(this.flags & (Body.HIDDEN | Body.COLLAPSED | Body.INVALID)));
 
     if (localSystem.indexOf(this) == -1)
-      this.orbit.indicator.setFade(focusR < 1 ? -0.01 : 0.01, 0.5);
+      this.orbit.indicator.setFade(focusR < 2.5 ? -0.01 : 0.01);
     else
       this.orbit.indicator.setFade(0);
   });

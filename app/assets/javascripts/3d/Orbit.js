@@ -1,11 +1,9 @@
 Orbit = function(satellite) {
   this.body = null;
   this.satellite = satellite;
-  this.C = new THREE.Vector3();
   this.satellitePosition = new THREE.Vector3();
   this.oa = new THREE.Vector3();
   this.mja = new THREE.Vector3();
-  this.mna = new THREE.Vector3();
 
   this.indicator = new OrbitIndicator(this);
 };
@@ -98,14 +96,6 @@ Orbit.prototype.calculateAxisVectors = function() {
     this.oa.copy(Ecliptic.NORTH).applyAxisAngle(an, Math.PI*this.inc/180.0);
 
     this.mja.copy(an).applyAxisAngle(this.oa, Math.PI*this.w/180.0).normalize();
-
-    this.mna.copy(this.mja).applyAxisAngle(this.oa, Math.PI/2).normalize();
-
-    var scale = SystemBrowser.SCALE;
-    if (this.ec < 1)
-      this.C.copy(this.mja).multiplyScalar(-scale * (this.a - this.qr));
-    else
-      this.C.copy(this.mja).multiplyScalar(scale * (Math.abs(this.a) + this.qr));
   };
 }();
 

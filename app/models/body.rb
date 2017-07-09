@@ -21,6 +21,10 @@ class Body < ActiveRecord::Base
   Markdown = Redcarpet::Markdown.new(markdown_renderer,
                                      Hash[markdown_extensions])
 
+  scope :stars, ->{ where(classification: 'Star') }
+  scope :planets, ->{ where(classification: 'Planet') }
+  scope :minor_planets, ->{ where(classification: 'Minor Planet') }
+  scope :moons, ->{ where(classification: 'Moon') }
   scope :spacecraft, ->{ where(classification: 'Spacecraft') }
 
   def self.named(name)
@@ -37,5 +41,48 @@ class Body < ActiveRecord::Base
 
   def ephemeris
     ephemerides.take
+  end
+
+  def encounters
+    if classification == "Spacecraft"
+      encounters = []
+      ephemeris = ephemerides.order(:jd).take
+      while ephemeris
+        encounters << OpenStruct.new(jd: ephemeris.jd, body: ephemeris.central_body)
+        ephemeris = ephemerides.order(:jd).
+                    where("jd > ? AND central_body_id != ?",
+                          ephemeris.jd, ephemeris.central_body_id).take
+      end
+
+      encounters
+    end
+  end
+
+  def inferred_events
+    events = []
+
+    if classification == "Spacecraft"
+      encounters.each do |encounter|
+        description = "Entered orbit around #{ encounter.body.name }"
+        events << OpenStruct.new(jd: encounter.jd, description: description)
+      end
+    else
+      Body.spacecraft.joins(:ephemerides).where(ephemerides: { central_body_id: id }).uniq.each do |satellite|
+        encounters = satellite.encounters
+        encounters.each_with_index do |encounter, i|
+          if encounter.body == self
+            description = "#{satellite.name} entered orbit"
+            events << OpenStruct.new(jd: encounter.jd, description: description)
+
+            if encounters[i+1]
+              description = "#{satellite.name} left orbit"
+              events << OpenStruct.new(jd: encounters[i+1].jd, description: description)
+            end
+          end
+        end
+      end
+    end
+
+    events.sort_by(&:jd)
   end
 end

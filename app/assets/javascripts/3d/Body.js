@@ -4,7 +4,7 @@ Body = function(name, attrs) {
   this.name = name;
   this.color = 'gray';
 
-  this.ephemerides = [];
+  this.ephemerides = new Ephemerides(this);
   this.orbit = new Orbit(this);
 
   this.radiusKm = 0.002;
@@ -24,29 +24,6 @@ Body = function(name, attrs) {
 Body.HIDDEN        = 0x01;
 Body.COLLAPSED     = 0x02;
 Body.INVALID       = 0x04;
-
-Body.prototype.addEphemerides = function(list) {
-  for (var i=0; i < list.length; ++i)
-    this.ephemerides.push(list[i]);
-};
-
-Body.prototype.selectEphemeris = function(jd) {
-  var mid, low = 0, high = this.ephemerides.length;
-  while (low != high) {
-    mid = Math.floor((low + high) / 2);
-    if (this.ephemerides[mid].jd <= jd)
-      low = mid + 1;
-    else
-      high = mid;
-  }
-
-  if (low > 0) {
-    this.orbit.load(this.ephemerides[low-1]);
-    this.orbit.update(jd);
-  }
-
-  return low > 0 && this.ephemerides[low-1];
-};
 
 Body.prototype.addSatellite = function(satellite) {
   if (satellite.orbit.body == this)
@@ -145,24 +122,22 @@ Body.prototype.updateObject3d = function(ctx, position) {
     this.satellites[i].updateObject3d(ctx);
 };
 
-Body.prototype.applyAxialTilt = function() {
-  var np = new THREE.Vector3();
-  var q = new THREE.Quaternion();
+Body.prototype.applyAxialTilt = function(ra, dec) {
+  this.northPole = this.northPole || new THREE.Vector3();
+  this.quaternion = this.quaternion || new THREE.Quaternion();
 
-  return function(ra, dec) {
-    Coord.equ(np, ra, dec);
+  Coord.equ(this.northPole, ra, dec);
 
-    // Default sphere rotation leaves body pointing to <0, 1, 0>
-    q.setFromUnitVectors(Ecliptic.SOLSTICE, np);
-    this.object3d.body.rotation.setFromQuaternion(q);
+  // Default sphere rotation leaves body pointing to <0, 1, 0>
+  this.quaternion.setFromUnitVectors(Ecliptic.SOLSTICE, this.northPole);
+  this.object3d.body.rotation.setFromQuaternion(this.quaternion);
 
-    // Default ring rotation leaves them pointing to <0, 0, 1>
-    if (this.rings) {
-      q.setFromUnitVectors(Ecliptic.NORTH, np);
-      this.rings.object3d.rotation.setFromQuaternion(q);
-    }
-  };
-}();
+  // Default ring rotation leaves them pointing to <0, 0, 1>
+  if (this.rings) {
+    this.quaternion.setFromUnitVectors(Ecliptic.NORTH, this.northPole);
+    this.rings.object3d.rotation.setFromQuaternion(this.quaternion);
+  }
+};
 
 // Private
 

@@ -6,7 +6,7 @@
   </head>
 
   <body>
-    <%= yield %>
+    <%= content_for?(:content) ? yield(:content) : yield %>
 
     <script type="text/javascript" src="index.js"></script>
   </body>

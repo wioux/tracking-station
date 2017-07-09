@@ -1,0 +1,13 @@
+
+<% content_for :content do %>
+  <%= react_component_with_content "BodiesManager",
+        searchPath: search_manage_bodies_path,
+        initialFilter: params[:f],
+        initialResults: @bodies_results,
+        initialSelectedResult: params[:id] do %>
+    <% yield %>
+  <% end %>
+<% end %>
+
+<%= render template: "layouts/application" %>
+

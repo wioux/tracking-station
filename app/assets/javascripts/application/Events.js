@@ -29,4 +29,8 @@ Events = function(proto) {
     for (var i=0; i < listeners.length; ++i)
       listeners[i](e);
   };
+
+  proto.trigger = function(type) {
+    this.dispatchEvent({ type: type });
+  };
 }

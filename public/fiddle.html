@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      body{ margin: 0px; padding: 0px }
+    </style>
+  </head>
+
+  <body>
+    <div id="ui"></div>
+
+    <div id="vertex-shader">
+attribute float random;
+varying float vRandom;
+
+void main() {
+  vRandom = random;
+  gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0);
+}
+    </div>
+
+    <div id="frag-shader">
+void main() {
+  vec3 orange    = vec3( 0.8, 0.65, 0.3 );
+  vec3 orangeRed = vec3( 0.8, 0.35, 0.1 );
+
+
+  gl_FragColor = vec4(1.0,  // R
+                      0.0,  // G
+                      1.0,  // B
+                      1.0); // A
+}
+    </div>
+
+    <script type="text/javascript" src="/assets/jquery.self.js"></script>
+    <script type="text/javascript" src="/assets/three.self.js"></script>
+    <script type="text/javascript" src="/assets/OrbitControls.self.js"></script>
+    <script type="text/javascript">
+      function setup() {
+        var scene = new THREE.Scene();
+        scene.up.set(0, 0, 1);
+
+        var camera = new THREE.PerspectiveCamera(
+          70 /* fov */,
+          window.innerWidth / window.innerHeight /* ar */,
+          0.0000001, 100000 /* far clip */
+        );
+        camera.up.set(0, 0, 1);
+        camera.position.z = 100
+
+        var renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setClearColor( 0x000000 );
+        document.getElementById('ui').appendChild(renderer.domElement);
+
+        // Tuck controls under camera
+        camera.controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.controls.enablePan = false;
+
+        var light = new THREE.AmbientLight(0x1a1a1a);
+//        var light = new THREE.PointLight(0xffffff, 1, 1000);
+//        light.position.set(0, 0, 0);
+        scene.add(light);
+
+        var textureLoader = new THREE.TextureLoader();
+        var textureFlare = textureLoader.load("/assets/lensflare0_alpha.png");
+        var lensFlare = new THREE.LensFlare(textureFlare, 700, 0.0, THREE.AdditiveBlending, new THREE.Color( 0xffffff ));
+
+        lensFlare.position.set(0, 0, 0);
+        scene.add(lensFlare)
+
+        window.scene = scene;
+        window.renderer = renderer;
+        window.camera = camera;
+      }
+
+      function animate() {
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+
+      $(document).ready(function() {
+        setup();
+
+//        window.sun = new THREE.Mesh();
+//        sun.geometry = new THREE.SphereGeometry(10, 10, 10);
+//        sun.material = new THREE.MeshBasicMaterial({
+//          color: 0xffff00
+//        });
+
+//        scene.add(sun);
+
+        animate();
+      });
+
+//        sun.geometry = new THREE.BufferGeometry().fromGeometry(new THREE.SphereGeometry(10, 10, 10));
+//        var num = sun.geometry.groups[0].count;
+//        sun.geometry.addAttribute('random', new THREE.BufferAttribute(num, 1));
+
+//        for (var i=0; i < num; ++i)
+//          sun.geometry.getAttribute('random').setX(i, Math.random());
+
+
+    </script>
+  </body>
+</html>
