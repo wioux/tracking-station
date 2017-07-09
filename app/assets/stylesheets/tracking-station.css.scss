@@ -1,64 +1,64 @@
 .tracking-station {
-    position: relative;
-    width: 700px;
-    height: 500px;
-    font-family: Monaco, monospace;
-    font-size: 9pt;
+  position: relative;
+  width: 700px;
+  height: 500px;
+  font-family: Monaco, monospace;
+  font-size: 9pt;
 }
 
 .tracking-station .sidebar {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    display: flex;
-    flex-flow: column;
-    height: 100%;
-    background-color: rgba(75, 75, 75, 0.3);
-    color: #cfcfcf;
-    border-right: 1px solid #2c3139;
-    padding: 12px 24px 12px 12px;
-    white-space: pre;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  display: flex;
+  flex-flow: column;
+  height: 100%;
+  background-color: rgba(75, 75, 75, 0.3);
+  color: #cfcfcf;
+  border-right: 1px solid #2c3139;
+  padding: 12px 24px 12px 12px;
+  white-space: pre;
 }
 
 .tracking-station .sidebar .state {
-    display: 0 1 auto;
-    padding-bottom: 8px;
+  display: 0 1 auto;
+  padding-bottom: 8px;
 }
 
 .tracking-station .sidebar .state > div label {
-    display: inline-block;
-    width: 75px;
+  display: inline-block;
+  width: 75px;
 }
 
 .tracking-station .sidebar .body-list {
-    display: 1 1 auto;
-    overflow-y: auto;
+  display: 1 1 auto;
+  overflow-y: auto;
 }
 
 .tracking-station .sidebar ul {
-    padding-left: 8px;
-    list-style-type: none;
+  padding-left: 8px;
+  list-style-type: none;
 }
 
 .tracking-station .sidebar ul li {
-    padding-top: 3px;
-    padding-bottom: 3px;
+  padding-top: 3px;
+  padding-bottom: 3px;
 }
 
 .tracking-station .sidebar ul li.focused {
-    background-color: #222222;
+  background-color: #222222;
 }
 
 .tracking-station .sidebar ul li.indent-0 strong {
-    padding-left: 8px;      
+  padding-left: 8px;
 }
 
 .tracking-station .sidebar ul li.indent-1 strong {
-    padding-left: 16px;
+  padding-left: 16px;
 }
 
 .tracking-station .sidebar ul li.indent-2 strong {
-    padding-left: 28px;
+  padding-left: 28px;
 }
 
 .tracking-station .panels {
@@ -73,89 +73,89 @@
 }
 
 .tracking-station .buttons .button {
-    padding: 4px;
-    cursor: pointer;
-    color: #cfcfcf;
-    background-color: #8a94a1; /* top */
-//    background-color: #515b67; /* bottom */
-    border-radius: 5px;
-    border: 1px solid #777;
-    margin-bottom: 4px;
-    width: 20px;
-    height: 20px;
+  padding: 4px;
+  cursor: pointer;
+  color: #cfcfcf;
+  background-color: #8a94a1; /* top */
+  //    background-color: #515b67; /* bottom */
+  border-radius: 5px;
+  border: 1px solid #777;
+  margin-bottom: 4px;
+  width: 20px;
+  height: 20px;
 }
 
 .tracking-station .buttons .button.selected {
-//    background-color: #3c4249; /* top */
-    background-color: #22262c; /* bottom */
+  //    background-color: #3c4249; /* top */
+  background-color: #22262c; /* bottom */
 }
 
 .tracking-station .panels .panel {
-    float: right;
-    margin-right: 8px;
-    text-align: justify;
-    width: 300px;
-    background-color: #1b1d1f;
-    color: #cfcfcf;
-    border-radius: 5px;
-    border: 1px solid #777;
+  float: right;
+  margin-right: 8px;
+  text-align: justify;
+  width: 300px;
+  background-color: #1b1d1f;
+  color: #cfcfcf;
+  border-radius: 5px;
+  border: 1px solid #777;
 }
 
 .tracking-station .panels .panel h2 {
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding: 4px;
-    font-size: 1em;
-//    background-color: #2ae678; /* top */
-    background-color: #1faa59; /* bottom */
-    color: #fff;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 4px;
+  font-size: 1em;
+  //    background-color: #2ae678; /* top */
+  background-color: #1faa59; /* bottom */
+  color: #fff;
 }
 
 .tracking-station .panels .panel h3 {
-    margin-top: 0px;
-    margin-bottom: 0px;
-    padding: 4px;
-    font-size: 1em;
-//    background-color: #8a94a1; /* top */
-    background-color: #515b67; /* bottom */
-    color: #fff;
+  margin-top: 0px;
+  margin-bottom: 0px;
+  padding: 4px;
+  font-size: 1em;
+  //    background-color: #8a94a1; /* top */
+  background-color: #515b67; /* bottom */
+  color: #fff;
 }
 
 .tracking-station .panels .panel .content {
-    padding-top: 8px;
-    padding-bottom: 8px;
-    padding-left: 12px;
-    padding-right: 12px;
-    max-height: 285px;
-    overflow-y: auto;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 12px;
+  padding-right: 12px;
+  max-height: 285px;
+  overflow-y: auto;
 }
 
 .tracking-station .panels .panel .content p:first-child {
-    margin-top: 0px;
+  margin-top: 0px;
 }
 
 .tracking-station .panels .panel a {
-    color: #cfcfcf;
+  color: #cfcfcf;
 }
 
 .tracking-station .panels .panel .content ul.timeline-events {
-    list-style-type: none;
-    padding: 0px;
-    margin: -8px -12px;
+  list-style-type: none;
+  padding: 0px;
+  margin: -8px -12px;
 }
 
 .tracking-station .panels .panel .content ul.timeline-events .date {
-    display: block;
-    font-weight: bold;
+  display: block;
+  font-weight: bold;
 }
 
 .tracking-station .panels .panel .content ul.timeline-events li {
-    padding: 8px 12px;
+  padding: 8px 12px;
 }
 
 .tracking-station .panels .panel .content ul.timeline-events .description {
-    display: block;
-    margin-left: 10px;
+  display: block;
+  margin-left: 10px;
 }
 
 .tracking-station .panels .panel .content .timeline-events .transpired[data-event_id] {
@@ -191,15 +191,15 @@
 }
 
 .tracking-station .body-tooltip {
-    position: absolute;
-    color: yellow;
-    font-family: monospace;
-    font-weight: bold;
-    z-index: 99;
-    cursor: default;
+  position: absolute;
+  color: yellow;
+  font-family: monospace;
+  font-weight: bold;
+  z-index: 99;
+  cursor: default;
 }
 
 #ui {
-    width: 100%;
-    height: 100%;
+  width: 100%;
+  height: 100%;
 }
