@@ -3,15 +3,41 @@
   <head>
     <title>TrackingStation</title>
     <link rel="stylesheet" media="all" href="index.css" />
+
+    <script type="text/javascript">
+      window.addEventListener('load', function() {
+        var container = document.createElement('div');
+
+        container.id = 'ui';
+        container.classList.add('tracking-station');
+        container.dataset.root = '1';
+        container.dataset.href = 'bodies/1.json';
+        console.log('hmm');
+        var q = (location.search || '?').substr(1).split('&');
+        for (var k, v, i=0; i < q.length; ++i) {
+          if (q[i] == '')
+            continue;
+
+          k = q[i].split('=')[0];
+          v = q[i].split('=')[1];
+
+          if (k == 'cameraR')
+            k = 'camera_radius';
+
+          container.dataset[k] = v;
+        }
+
+        document.body.appendChild(container);
+
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        script.src = 'index.js';
+
+        document.body.appendChild(script);
+      });
+    </script>
   </head>
 
   <body>
-    <div id="ui"
-     class="tracking-station"
-     data-root="1"
-     data-href="bodies/1.json"></div>
-
-
-    <script type="text/javascript" src="index.js"></script>
   </body>
 </html>
