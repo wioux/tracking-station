@@ -6,6 +6,8 @@ mv public/assets/*.js index.js
 mv public/assets/*.css index.css
 curl http://localhost:3000/bodies/1.json -o bodies/1.json
 
+sed -i '' s@/bodies/@bodies/@g bodies/1.json
+
 # Major bodies
 for i in 1 2 3 4 5 6 7 8 9; do
     mkdir -p bodies/$i
