@@ -1,5 +1,5 @@
 
-InfoPanels = function(system, parent) {
+InfoPanels = function(system, parent, initialTimeline) {
   var panels = _('div', { parent: parent, class: 'panels' });
   panels.innerHTML =
     '<div class="buttons">' +
@@ -58,6 +58,21 @@ InfoPanels = function(system, parent) {
     if (!$(panels).find('.button[data-panel=timeline]').hasClass('selected'))
       $(panels).find('.button[data-panel=timeline]').trigger('click');
   });
+
+  // ugly
+  if (initialTimeline) {
+    var setupTimeline;
+    setupTimeline = system.addEventListener('update', function() {
+      system.removeEventListener('update', setupTimeline);
+
+      var focus = system.focus;
+      system.focus = system.bodies[initialTimeline];
+
+      $(panels).find('.button[data-panel=timeline]').trigger('click');
+
+      system.focus = focus;
+    });
+  }
 };
 
 // Private

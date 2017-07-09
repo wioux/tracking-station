@@ -20,7 +20,7 @@ $(document).ready(function() {
       new StatePanel(sys, sidebar);
       new BodyListPanel(sys, sidebar);
 
-      new InfoPanels(sys, container);
+      new InfoPanels(sys, container, $(container).data('timeline'));
       new BodyTooltip(sys, container);
       new EventPopups(sys, container);
 
