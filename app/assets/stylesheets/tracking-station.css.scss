@@ -16,13 +16,13 @@
     background-color: rgba(75, 75, 75, 0.3);
     color: #cfcfcf;
     border-right: 1px solid #2c3139;
-    padding-left: 12px;
-    padding-right: 12px;
+    padding: 12px 24px 12px 12px;
     white-space: pre;
 }
 
 .tracking-station .sidebar .state {
     display: 0 1 auto;
+    padding-bottom: 8px;
 }
 
 .tracking-station .sidebar .state > div label {
@@ -61,11 +61,15 @@
     padding-left: 28px;
 }
 
+.tracking-station .panels {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  z-index: 99;
+}
+
 .tracking-station .buttons {
-    position: absolute;
-    top: 150px;
-    right: 4px;
-    z-index: 99;
+  float: right;
 }
 
 .tracking-station .buttons .button {
@@ -87,9 +91,8 @@
 }
 
 .tracking-station .panels .panel {
-    position: absolute;
-    top: 150px;
-    right: 40px;
+    float: right;
+    margin-right: 8px;
     text-align: justify;
     width: 300px;
     background-color: #1b1d1f;
