@@ -21,6 +21,10 @@ class Body < ActiveRecord::Base
   Markdown = Redcarpet::Markdown.new(markdown_renderer,
                                      Hash[markdown_extensions])
 
+  scope :stars, ->{ where(classification: 'Star') }
+  scope :planets, ->{ where(classification: 'Planet') }
+  scope :minor_planets, ->{ where(classification: 'Minor Planet') }
+  scope :moons, ->{ where(classification: 'Moon') }
   scope :spacecraft, ->{ where(classification: 'Spacecraft') }
 
   def self.named(name)

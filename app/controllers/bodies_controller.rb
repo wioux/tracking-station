@@ -1,4 +1,6 @@
 class BodiesController < ApplicationController
+  before_action :collect_body_ids_from_friendly_params
+
   def index
     @body = Body.find_by!(classification: 'Star')
     @satellite_ids = params[:bodies] if params.key?(:bodies)
@@ -48,5 +50,11 @@ class BodiesController < ApplicationController
     end
 
     bodies.tap(&:uniq!)
+  end
+
+  def collect_body_ids_from_friendly_params
+    if params[:planets]
+      params[:bodies] = Array(params[:bodies]).concat(Body.planets.pluck(:id))
+    end
   end
 end
